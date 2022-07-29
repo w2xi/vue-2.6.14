@@ -12,6 +12,7 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 
 let uid = 0
 
+// 在 Vue.prototype 上定义了 _init 方法，用于 Vue 构造函数内部的初始化
 export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this

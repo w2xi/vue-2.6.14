@@ -319,6 +319,9 @@ function createWatcher (
   return vm.$watch(expOrFn, handler, options)
 }
 
+// 在 Vue.prototype 上定义:
+// 属性：$data (代理 _data), $props (代理 _props) 只读属性
+// 方法: $set, $del, $watch
 export function stateMixin (Vue: Class<Component>) {
   // flow somehow has problems with directly declared definition object
   // when using Object.defineProperty, so we have to procedurally build up

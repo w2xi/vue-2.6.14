@@ -55,6 +55,8 @@ export function initLifecycle (vm: Component) {
   vm._isBeingDestroyed = false
 }
 
+
+// 在 Vue.prototype 上定义了 _update, $forceUpdate, $destroy 三个方法
 export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this

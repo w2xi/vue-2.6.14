@@ -19,6 +19,7 @@ import {
 } from '../util/index'
 
 export function initGlobalAPI (Vue: GlobalAPI) {
+  // 在 Vue 上添加 config 属性
   // config
   const configDef = {}
   configDef.get = () => config
@@ -49,12 +50,12 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   Vue.observable = <T>(obj: T): T => {
     observe(obj)
     return obj
-  }
+  };
 
   Vue.options = Object.create(null)
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
-  })
+  });
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
@@ -62,8 +63,12 @@ export function initGlobalAPI (Vue: GlobalAPI) {
 
   extend(Vue.options.components, builtInComponents)
 
+  // 在 Vue 上添加 use 方法
   initUse(Vue)
+  // 在 Vue 上添加 mixin 方法
   initMixin(Vue)
+  // 在 Vue 上添加 extend 方法
   initExtend(Vue)
+  // 在 Vue 上添加 component, directive, filter  方法
   initAssetRegisters(Vue)
 }

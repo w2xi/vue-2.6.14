@@ -25,8 +25,11 @@ const weexFactoryPlugin = {
   }
 }
 
+// 别名 key:path 路径映射
 const aliases = require('./alias')
+// 根据别名做路径解析
 const resolve = p => {
+  // 获取 key
   const base = p.split('/')[0]
   if (aliases[base]) {
     return path.resolve(aliases[base], p.slice(base.length + 1))
@@ -34,7 +37,7 @@ const resolve = p => {
     return path.resolve(__dirname, '../', p)
   }
 }
-
+ 
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {
@@ -119,6 +122,7 @@ const builds = {
     env: 'production',
     banner
   },
+  // 构建完整版 umd 模块的 Vue
   // Runtime+compiler development build (Browser)
   'web-full-dev': {
     entry: resolve('web/entry-runtime-with-compiler.js'),
