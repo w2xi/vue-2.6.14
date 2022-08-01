@@ -27,7 +27,9 @@ Vue.config.getTagNamespace = getTagNamespace
 Vue.config.isUnknownElement = isUnknownElement
 
 // install platform runtime directives & components
+// 为 directives 添加两个平台化的指令 model 和 show
 extend(Vue.options.directives, platformDirectives)
+// 为 components 添加两个平台化的组件 Transition 和 TransitionGroup
 extend(Vue.options.components, platformComponents)
 
 // install platform patch function
@@ -41,6 +43,8 @@ Vue.prototype.$mount = function (
   el = el && inBrowser ? query(el) : undefined
   return mountComponent(this, el, hydrating)
 }
+
+// vue-devtools 插件全局钩子
 
 // devtools global hook
 /* istanbul ignore next */

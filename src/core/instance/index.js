@@ -17,6 +17,7 @@ function Vue (options) {
 }
 
 // 将 Vue 作为参数传递给导入的五个方法
+// 在 Vue.prototype 上添加属性和方法
 initMixin(Vue)
 stateMixin(Vue)
 eventsMixin(Vue)

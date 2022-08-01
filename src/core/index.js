@@ -1,9 +1,9 @@
+// Vue 构造函数真正所在地
 import Vue from './instance/index'
 import { initGlobalAPI } from './global-api/index'
 import { isServerRendering } from 'core/util/env'
 import { FunctionalRenderContext } from 'core/vdom/create-functional-component'
 
-// 将 Vue 构造函数作为参数，传递给 initGlobalAPI 方法
 // 在 Vue 上添加属性和方法 作为全局 API
 initGlobalAPI(Vue)
 

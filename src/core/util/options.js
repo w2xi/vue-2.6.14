@@ -276,6 +276,7 @@ function checkComponents (options: Object) {
   }
 }
 
+// 验证是否是 `合理` 的组件名
 export function validateComponentName (name: string) {
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
     warn(
@@ -283,6 +284,8 @@ export function validateComponentName (name: string) {
       'should conform to valid custom element name in html5 specification.'
     )
   }
+  // isBuiltInTag 判断是否是内置tag ( slot 和 component 是 Vue 内置的组件 )
+  // isReservedTag 判断是否是保留tag ( HTML tag )
   if (isBuiltInTag(name) || config.isReservedTag(name)) {
     warn(
       'Do not use built-in or reserved HTML elements as component ' +
@@ -292,6 +295,7 @@ export function validateComponentName (name: string) {
 }
 
 /**
+ * 规范化 props 为对象格式
  * Ensure all props option syntax are normalized into the
  * Object-based format.
  */
@@ -301,6 +305,8 @@ function normalizeProps (options: Object, vm: ?Component) {
   const res = {}
   let i, val, name
   if (Array.isArray(props)) {
+    // example: 
+    // props: ['title', 'posts']
     i = props.length
     while (i--) {
       val = props[i]
@@ -312,6 +318,8 @@ function normalizeProps (options: Object, vm: ?Component) {
       }
     }
   } else if (isPlainObject(props)) {
+    // example:
+    // props: { title: String } | { title: { type: String, ... } }
     for (const key in props) {
       val = props[key]
       name = camelize(key)
@@ -330,6 +338,7 @@ function normalizeProps (options: Object, vm: ?Component) {
 }
 
 /**
+ * 规范化 inject 为对象格式
  * Normalize all injections into Object-based format
  */
 function normalizeInject (options: Object, vm: ?Component) {
@@ -337,10 +346,14 @@ function normalizeInject (options: Object, vm: ?Component) {
   if (!inject) return
   const normalized = options.inject = {}
   if (Array.isArray(inject)) {
+    // example:
+    // inject: ['foo']
     for (let i = 0; i < inject.length; i++) {
       normalized[inject[i]] = { from: inject[i] }
     }
   } else if (isPlainObject(inject)) {
+    // example:
+    // inject: { foo: 'foo', d: 'data' }
     for (const key in inject) {
       const val = inject[key]
       normalized[key] = isPlainObject(val)
@@ -357,6 +370,7 @@ function normalizeInject (options: Object, vm: ?Component) {
 }
 
 /**
+ * 规范化 directives 为对象格式
  * Normalize raw function directives into object format.
  */
 function normalizeDirectives (options: Object) {
@@ -398,9 +412,11 @@ export function mergeOptions (
     child = child.options
   }
 
-  normalizeProps(child, vm)
-  normalizeInject(child, vm)
-  normalizeDirectives(child)
+  // 规范化选项 (options)
+
+  normalizeProps(child, vm)   // 规范化 props
+  normalizeInject(child, vm)  // 规范化 inject
+  normalizeDirectives(child)  // 规范化 directives
 
   // Apply extends and mixins on the child options,
   // but only if it is a raw options object that isn't

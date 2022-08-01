@@ -20,6 +20,10 @@ export function initMixin (Vue: Class<Component>) {
     vm._uid = uid++
 
     let startTag, endTag
+    
+    // https://cn.vuejs.org/v2/api/#performance
+    // Vue.config.performance 设置为 true 将开启性能追踪
+
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
       startTag = `vue-perf-start:${vm._uid}`
@@ -27,15 +31,17 @@ export function initMixin (Vue: Class<Component>) {
       mark(startTag)
     }
 
+    // Vue 实例的标记，避免被 响应式系统观测
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
-    if (options && options._isComponent) {
+    if (options && options._isComponent) { // 内部属性 创建组件时 _isComponent 为 true
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // 给 Vue 实例添加 $options 属性， 用于当前 Vue 初始化
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -50,6 +56,10 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
+
+    // 真正的初始化
+    // 下面这些方法都会用到 vm.$options 属性
+
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
@@ -93,6 +103,11 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
+  // super 属性 是`子类`才有的属性
+  // example:
+  // const Sub = Vue.extend({...})
+  // console.log(Sub.super) // Vue
+
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions

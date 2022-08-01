@@ -4,17 +4,21 @@ import config from 'core/config'
 import { warn, cached } from 'core/util/index'
 import { mark, measure } from 'core/util/perf'
 
+// 导入运行时的 Vue
 import Vue from './runtime/index'
 import { query } from './util/index'
 import { compileToFunctions } from './compiler/index'
 import { shouldDecodeNewlines, shouldDecodeNewlinesForHref } from './util/compat'
 
+// 根据 id 获取元素的 innerHTML
 const idToTemplate = cached(id => {
   const el = query(id)
   return el && el.innerHTML
 })
 
+// 缓存 Vue.prototype.$mount
 const mount = Vue.prototype.$mount
+// 重写 Vue.prototype.$mount 方法
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
@@ -96,6 +100,7 @@ function getOuterHTML (el: Element): string {
   }
 }
 
+// 在 Vue 上添加 compile 方法
 Vue.compile = compileToFunctions
 
 export default Vue
