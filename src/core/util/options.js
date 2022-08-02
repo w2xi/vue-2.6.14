@@ -140,7 +140,7 @@ strats.data = function (
     }
     return mergeDataOrFn(parentVal, childVal)
   }
-
+  // vm 存在，说明是使用 new 操作符创建实例时的选项
   return mergeDataOrFn(parentVal, childVal, vm)
 }
 
@@ -453,6 +453,7 @@ export function mergeOptions (
     }
   }
   function mergeField (key) {
+    // 根据策略函数合并对应选项
     // 当一个选项没有对应的策略函数时，使用默认策略
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
