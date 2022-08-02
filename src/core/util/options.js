@@ -32,6 +32,7 @@ const strats = config.optionMergeStrategies
  * Options with restrictions
  */
 if (process.env.NODE_ENV !== 'production') {
+  // strats.el 和 strats.propsData 这两个策略函数是只有在非生产环境才有 
   strats.el = strats.propsData = function (parent, child, vm, key) {
     if (!vm) {
       warn(
@@ -118,12 +119,15 @@ export function mergeDataOrFn (
   }
 }
 
+// 选项 data 的合并策略 函数，用来合并处理 data 选项
 strats.data = function (
   parentVal: any,
   childVal: any,
   vm?: Component
 ): ?Function {
+  // vm 不存在 说明合并的是子组件的 data
   if (!vm) {
+    // 对于子组件, data 选项 (childVal) 应该是一个函数 否则在非生产环境下会产生一个警告
     if (childVal && typeof childVal !== 'function') {
       process.env.NODE_ENV !== 'production' && warn(
         'The "data" option should be a function ' +
@@ -413,6 +417,7 @@ export function mergeOptions (
   }
 
   // 规范化选项 (options)
+  // 规范的原因: props inject directives 有多种写法， 底层需要将其统一化才好处理
 
   normalizeProps(child, vm)   // 规范化 props
   normalizeInject(child, vm)  // 规范化 inject
@@ -423,9 +428,13 @@ export function mergeOptions (
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
   if (!child._base) {
+    // extends 选项
+    // https://cn.vuejs.org/v2/api/#extends
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
+    // mixin 选项
+    // https://cn.vuejs.org/v2/api/#mixins
     if (child.mixins) {
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)
@@ -444,6 +453,7 @@ export function mergeOptions (
     }
   }
   function mergeField (key) {
+    // 当一个选项没有对应的策略函数时，使用默认策略
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
   }

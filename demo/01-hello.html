@@ -2,7 +2,7 @@
  * @Author: w2xi
  * @Date: 2022-07-28 16:00:51
  * @LastEditors: w2xi
- * @LastEditTime: 2022-08-01 17:18:55
+ * @LastEditTime: 2022-08-02 10:27:36
  * @Description: 
 -->
 <!DOCTYPE html>
@@ -21,16 +21,18 @@
   <script>
     const vm = new Vue({
       el: '#app',
-      components: {
-        slot: 'SlotComponent',
-        component: 'Component'
-      },
       data: {
         msg: 'Hello Vue.js'
+      },
+      directives: {
+        test() {
+          return 122
+        }
       }
     })
     window.vm = vm;
     console.log(Vue.options)
+    console.log(vm)
   </script>
 </body>
 </html>
