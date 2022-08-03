@@ -45,6 +45,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 /**
+ * 最终的 data 合并策略
  * Helper that recursively merges two data objects together.
  */
 function mergeData (to: Object, from: ?Object): Object {
@@ -61,21 +62,25 @@ function mergeData (to: Object, from: ?Object): Object {
     if (key === '__ob__') continue
     toVal = to[key]
     fromVal = from[key]
+    // 如果 from 对象中的 key 不在 to 对象中，则使用 set 函数为 to 对象设置 key 及相应的值
     if (!hasOwn(to, key)) {
       set(to, key, fromVal)
-    } else if (
+    } else if ( 
       toVal !== fromVal &&
       isPlainObject(toVal) &&
       isPlainObject(fromVal)
     ) {
+      // 如果 from 对象中的 key 也在 to 对象中，且这两个属性的值不同且都是纯对象则递归进行深度合并
       mergeData(toVal, fromVal)
     }
+    // 其他情况什么也不做
   }
   return to
 }
 
 /**
  * Data
+ * @return {Function}
  */
 export function mergeDataOrFn (
   parentVal: any,
@@ -138,6 +143,7 @@ strats.data = function (
 
       return parentVal
     }
+    // childVal 是函数类型
     return mergeDataOrFn(parentVal, childVal)
   }
   // vm 存在，说明是使用 new 操作符创建实例时的选项
@@ -399,7 +405,11 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
   }
 }
 
+
 /**
+ * 项目合并:
+ * 在 `实例化` 和 `继承` 时会执行该操作
+ * new Vue({}) | Vue.extend({}) | Vue.mixin({})
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
  */

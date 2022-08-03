@@ -1167,6 +1167,7 @@
    * Options with restrictions
    */
   {
+    // strats.el 和 strats.propsData 这两个策略函数是只有在非生产环境才有 
     strats.el = strats.propsData = function (parent, child, vm, key) {
       if (!vm) {
         warn(
@@ -1179,6 +1180,7 @@
   }
 
   /**
+   * 最终的 data 合并策略
    * Helper that recursively merges two data objects together.
    */
   function mergeData (to, from) {
@@ -1195,21 +1197,25 @@
       if (key === '__ob__') { continue }
       toVal = to[key];
       fromVal = from[key];
+      // 如果 from 对象中的 key 不在 to 对象中，则使用 set 函数为 to 对象设置 key 及相应的值
       if (!hasOwn(to, key)) {
         set(to, key, fromVal);
-      } else if (
+      } else if ( 
         toVal !== fromVal &&
         isPlainObject(toVal) &&
         isPlainObject(fromVal)
       ) {
+        // 如果 from 对象中的 key 也在 to 对象中，且这两个属性的值不同且都是纯对象则递归进行深度合并
         mergeData(toVal, fromVal);
       }
+      // 其他情况什么也不做
     }
     return to
   }
 
   /**
    * Data
+   * @return {Function}
    */
   function mergeDataOrFn (
     parentVal,
@@ -1253,12 +1259,15 @@
     }
   }
 
+  // 选项 data 的合并策略 函数，用来合并处理 data 选项
   strats.data = function (
     parentVal,
     childVal,
     vm
   ) {
+    // vm 不存在 说明合并的是子组件的 data
     if (!vm) {
+      // 对于子组件, data 选项 (childVal) 应该是一个函数 否则在非生产环境下会产生一个警告
       if (childVal && typeof childVal !== 'function') {
          warn(
           'The "data" option should be a function ' +
@@ -1269,9 +1278,10 @@
 
         return parentVal
       }
+      // childVal 是函数类型
       return mergeDataOrFn(parentVal, childVal)
     }
-
+    // vm 存在，说明是使用 new 操作符创建实例时的选项
     return mergeDataOrFn(parentVal, childVal, vm)
   };
 
@@ -1411,6 +1421,7 @@
     }
   }
 
+  // 验证是否是 `合理` 的组件名
   function validateComponentName (name) {
     if (!new RegExp(("^[a-zA-Z][\\-\\.0-9_" + (unicodeRegExp.source) + "]*$")).test(name)) {
       warn(
@@ -1418,6 +1429,8 @@
         'should conform to valid custom element name in html5 specification.'
       );
     }
+    // isBuiltInTag 判断是否是内置tag ( slot 和 component 是 Vue 内置的组件 )
+    // isReservedTag 判断是否是保留tag ( HTML tag )
     if (isBuiltInTag(name) || config.isReservedTag(name)) {
       warn(
         'Do not use built-in or reserved HTML elements as component ' +
@@ -1427,6 +1440,7 @@
   }
 
   /**
+   * 规范化 props 为对象格式
    * Ensure all props option syntax are normalized into the
    * Object-based format.
    */
@@ -1436,6 +1450,8 @@
     var res = {};
     var i, val, name;
     if (Array.isArray(props)) {
+      // example: 
+      // props: ['title', 'posts']
       i = props.length;
       while (i--) {
         val = props[i];
@@ -1447,6 +1463,8 @@
         }
       }
     } else if (isPlainObject(props)) {
+      // example:
+      // props: { title: String } | { title: { type: String, ... } }
       for (var key in props) {
         val = props[key];
         name = camelize(key);
@@ -1465,6 +1483,7 @@
   }
 
   /**
+   * 规范化 inject 为对象格式
    * Normalize all injections into Object-based format
    */
   function normalizeInject (options, vm) {
@@ -1472,10 +1491,14 @@
     if (!inject) { return }
     var normalized = options.inject = {};
     if (Array.isArray(inject)) {
+      // example:
+      // inject: ['foo']
       for (var i = 0; i < inject.length; i++) {
         normalized[inject[i]] = { from: inject[i] };
       }
     } else if (isPlainObject(inject)) {
+      // example:
+      // inject: { foo: 'foo', d: 'data' }
       for (var key in inject) {
         var val = inject[key];
         normalized[key] = isPlainObject(val)
@@ -1492,6 +1515,7 @@
   }
 
   /**
+   * 规范化 directives 为对象格式
    * Normalize raw function directives into object format.
    */
   function normalizeDirectives (options) {
@@ -1516,7 +1540,11 @@
     }
   }
 
+
   /**
+   * 项目合并:
+   * 在 `实例化` 和 `继承` 时会执行该操作
+   * new Vue({}) | Vue.extend({}) | Vue.mixin({})
    * Merge two option objects into a new one.
    * Core utility used in both instantiation and inheritance.
    */
@@ -1533,18 +1561,25 @@
       child = child.options;
     }
 
-    normalizeProps(child, vm);
-    normalizeInject(child, vm);
-    normalizeDirectives(child);
+    // 规范化选项 (options)
+    // 规范的原因: props inject directives 有多种写法， 底层需要将其统一化才好处理
+
+    normalizeProps(child, vm);   // 规范化 props
+    normalizeInject(child, vm);  // 规范化 inject
+    normalizeDirectives(child);  // 规范化 directives
 
     // Apply extends and mixins on the child options,
     // but only if it is a raw options object that isn't
     // the result of another mergeOptions call.
     // Only merged options has the _base property.
     if (!child._base) {
+      // extends 选项
+      // https://cn.vuejs.org/v2/api/#extends
       if (child.extends) {
         parent = mergeOptions(parent, child.extends, vm);
       }
+      // mixin 选项
+      // https://cn.vuejs.org/v2/api/#mixins
       if (child.mixins) {
         for (var i = 0, l = child.mixins.length; i < l; i++) {
           parent = mergeOptions(parent, child.mixins[i], vm);
@@ -1563,6 +1598,8 @@
       }
     }
     function mergeField (key) {
+      // 根据策略函数合并对应选项
+      // 当一个选项没有对应的策略函数时，使用默认策略
       var strat = strats[key] || defaultStrat;
       options[key] = strat(parent[key], child[key], vm, key);
     }
@@ -3532,7 +3569,9 @@
 
   var currentRenderingInstance = null;
 
+  // 在 Vue.prototype 上定义 $nextTick, _render 等方法
   function renderMixin (Vue) {
+    // 在 Vue.prototype 上添加一系列方法
     // install runtime convenience helpers
     installRenderHelpers(Vue.prototype);
 
@@ -3809,6 +3848,7 @@
     target = undefined;
   }
 
+  // 在 Vue.prototype 上定义了 $on, $once, $off, $emit 四个方法
   function eventsMixin (Vue) {
     var hookRE = /^hook:/;
     Vue.prototype.$on = function (event, fn) {
@@ -3941,6 +3981,8 @@
     vm._isBeingDestroyed = false;
   }
 
+
+  // 在 Vue.prototype 上定义了 _update, $forceUpdate, $destroy 三个方法
   function lifecycleMixin (Vue) {
     Vue.prototype._update = function (vnode, hydrating) {
       var vm = this;
@@ -4913,6 +4955,9 @@
     return vm.$watch(expOrFn, handler, options)
   }
 
+  // 在 Vue.prototype 上定义:
+  // 属性：$data (代理 _data), $props (代理 _props) 只读属性
+  // 方法: $set, $del, $watch
   function stateMixin (Vue) {
     // flow somehow has problems with directly declared definition object
     // when using Object.defineProperty, so we have to procedurally build up
@@ -4967,6 +5012,7 @@
 
   var uid$2 = 0;
 
+  // 在 Vue.prototype 上定义了 _init 方法，用于 Vue 构造函数内部的初始化
   function initMixin (Vue) {
     Vue.prototype._init = function (options) {
       var vm = this;
@@ -4974,6 +5020,10 @@
       vm._uid = uid$2++;
 
       var startTag, endTag;
+      
+      // https://cn.vuejs.org/v2/api/#performance
+      // Vue.config.performance 设置为 true 将开启性能追踪
+
       /* istanbul ignore if */
       if ( config.performance && mark) {
         startTag = "vue-perf-start:" + (vm._uid);
@@ -4981,15 +5031,17 @@
         mark(startTag);
       }
 
+      // Vue 实例的标记，避免被 响应式系统观测
       // a flag to avoid this being observed
       vm._isVue = true;
       // merge options
-      if (options && options._isComponent) {
+      if (options && options._isComponent) { // 内部属性 创建组件时 _isComponent 为 true
         // optimize internal component instantiation
         // since dynamic options merging is pretty slow, and none of the
         // internal component options needs special treatment.
         initInternalComponent(vm, options);
       } else {
+        // 给 Vue 实例添加 $options 属性， 用于当前 Vue 初始化
         vm.$options = mergeOptions(
           resolveConstructorOptions(vm.constructor),
           options || {},
@@ -5002,6 +5054,10 @@
       }
       // expose real self
       vm._self = vm;
+
+      // 真正的初始化
+      // 下面这些方法都会用到 vm.$options 属性
+
       initLifecycle(vm);
       initEvents(vm);
       initRender(vm);
@@ -5045,6 +5101,11 @@
 
   function resolveConstructorOptions (Ctor) {
     var options = Ctor.options;
+    // super 属性 是`子类`才有的属性
+    // example:
+    // const Sub = Vue.extend({...})
+    // console.log(Sub.super) // Vue
+
     if (Ctor.super) {
       var superOptions = resolveConstructorOptions(Ctor.super);
       var cachedSuperOptions = Ctor.superOptions;
@@ -5080,6 +5141,9 @@
     return modified
   }
 
+  // 从五个文件导入五个方法（不包括 warn）
+
+  // 定义 Vue 构造函数
   function Vue (options) {
     if (
       !(this instanceof Vue)
@@ -5089,6 +5153,8 @@
     this._init(options);
   }
 
+  // 将 Vue 作为参数传递给导入的五个方法
+  // 在 Vue.prototype 上添加属性和方法
   initMixin(Vue);
   stateMixin(Vue);
   eventsMixin(Vue);
@@ -5417,6 +5483,7 @@
   /*  */
 
   function initGlobalAPI (Vue) {
+    // 在 Vue 上添加 config 属性
     // config
     var configDef = {};
     configDef.get = function () { return config; };
@@ -5427,6 +5494,7 @@
         );
       };
     }
+    // 在 Vue 上添加 config 属性
     Object.defineProperty(Vue, 'config', configDef);
 
     // exposed util methods.
@@ -5439,17 +5507,21 @@
       defineReactive: defineReactive
     };
 
+    // 在 Vue 添加 set, delete nextTick 方法
     Vue.set = set;
     Vue.delete = del;
     Vue.nextTick = nextTick;
 
+    // 在 Vue 上添加 observable 方法
     // 2.6 explicit observable API
     Vue.observable = function (obj) {
       observe(obj);
       return obj
     };
 
+    // 在 Vue 上添加 options 属性
     Vue.options = Object.create(null);
+    // ASSET_TYPES: ['component', 'directive', 'filter']
     ASSET_TYPES.forEach(function (type) {
       Vue.options[type + 's'] = Object.create(null);
     });
@@ -5458,14 +5530,23 @@
     // components with in Weex's multi-instance scenarios.
     Vue.options._base = Vue;
 
+    // 混合 builtInComponents 属性到 Vue.options.components
+    // 最终结果: Vue.options.components = { KeepAlive }
     extend(Vue.options.components, builtInComponents);
 
+    // 在 Vue 上添加 use 方法
     initUse(Vue);
+    // 在 Vue 上添加 mixin 方法
     initMixin$1(Vue);
+    // 在 Vue 上添加 extend 方法 和 cid 属性
     initExtend(Vue);
+    // 在 Vue 上添加 component, directive, filter  方法
     initAssetRegisters(Vue);
   }
 
+  // Vue 构造函数真正所在地
+
+  // 在 Vue 上添加属性和方法 作为全局 API
   initGlobalAPI(Vue);
 
   Object.defineProperty(Vue.prototype, '$isServer', {
@@ -5484,6 +5565,9 @@
     value: FunctionalRenderContext
   });
 
+  // Vue.version 存储了当前 Vue 的版本号
+  // 详情见: scripts/config.js ( 2.6.14: version ), 会被 rollup 插件处理
+  // 当前版本: 2.6.14
   Vue.version = '2.6.14';
 
   /*  */
@@ -9077,7 +9161,9 @@
   Vue.config.isUnknownElement = isUnknownElement;
 
   // install platform runtime directives & components
+  // 为 directives 添加两个平台化的指令 model 和 show
   extend(Vue.options.directives, platformDirectives);
+  // 为 components 添加两个平台化的组件 Transition 和 TransitionGroup
   extend(Vue.options.components, platformComponents);
 
   // install platform patch function
@@ -9091,6 +9177,8 @@
     el = el && inBrowser ? query(el) : undefined;
     return mountComponent(this, el, hydrating)
   };
+
+  // vue-devtools 插件全局钩子
 
   // devtools global hook
   /* istanbul ignore next */
@@ -11928,12 +12016,15 @@
 
   /*  */
 
+  // 根据 id 获取元素的 innerHTML
   var idToTemplate = cached(function (id) {
     var el = query(id);
     return el && el.innerHTML
   });
 
+  // 缓存 Vue.prototype.$mount
   var mount = Vue.prototype.$mount;
+  // 重写 Vue.prototype.$mount 方法
   Vue.prototype.$mount = function (
     el,
     hydrating
@@ -12017,6 +12108,7 @@
     }
   }
 
+  // 在 Vue 上添加 compile 方法
   Vue.compile = compileToFunctions;
 
   return Vue;
