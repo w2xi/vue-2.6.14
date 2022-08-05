@@ -2,7 +2,7 @@
  * @Author: w2xi
  * @Date: 2022-07-28 16:00:51
  * @LastEditors: w2xi
- * @LastEditTime: 2022-08-04 12:15:41
+ * @LastEditTime: 2022-08-04 12:06:15
  * @Description: 
 -->
 <!DOCTYPE html>
@@ -15,20 +15,22 @@
   <script src="../dist/vue.js"></script>
 </head>
 <body>
-  <div id="app">
-    {{ msg }}
-  </div>
+  <div id="app"></div>
   <script>
     const vm = new Vue({
       el: '#app',
-      data: {
-        msg: 'Hello Vue.js'
-      },
-      directives: {
-        test() {
-          return 122
-        }
-      }
+      created: [
+        // 按循序执行
+        function() {
+          console.log('first')
+        },
+        function() {
+          console.log('second')
+        },
+        function() {
+          console.log('third')
+        },
+      ],
     })
     window.vm = vm;
   </script>

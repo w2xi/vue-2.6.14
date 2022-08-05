@@ -179,6 +179,7 @@ function dedupeHooks (hooks) {
   return res
 }
 
+// 生命周期钩子的合并策略
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -205,11 +206,15 @@ function mergeAssets (
   }
 }
 
+// 资源的合并策略 ( 指令，过滤器，组件 )
+// ['component', 'directive', 'filter']
 ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets
 })
 
+
 /**
+ * watch 的合并策略
  * Watchers.
  *
  * Watchers hashes should not overwrite one
@@ -232,6 +237,8 @@ strats.watch = function (
   if (!parentVal) return childVal
   const ret = {}
   extend(ret, parentVal)
+  // 检测子选项中的值是否也在父选项中，
+  // 如果在的话将父子选项合并到一个数组，否则直接把子选项变成一个数组返回
   for (const key in childVal) {
     let parent = ret[key]
     const child = childVal[key]
@@ -246,6 +253,8 @@ strats.watch = function (
 }
 
 /**
+ * props methods inject computed 策略函数
+ * 在 mergeOptions 中已经被规范化了，因此 props inject 等数据都是 对象类型
  * Other object hashes.
  */
 strats.props =
@@ -269,6 +278,7 @@ strats.computed = function (
 strats.provide = mergeDataOrFn
 
 /**
+ * 默认合并策略
  * Default strategy.
  */
 const defaultStrat = function (parentVal: any, childVal: any): any {
@@ -441,11 +451,13 @@ export function mergeOptions (
     // extends 选项
     // https://cn.vuejs.org/v2/api/#extends
     if (child.extends) {
+      // 递归合并 extends
       parent = mergeOptions(parent, child.extends, vm)
     }
     // mixin 选项
     // https://cn.vuejs.org/v2/api/#mixins
     if (child.mixins) {
+      // 递归合并 mixins (数组)
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)
       }

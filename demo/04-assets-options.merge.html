@@ -2,7 +2,7 @@
  * @Author: w2xi
  * @Date: 2022-07-28 16:00:51
  * @LastEditors: w2xi
- * @LastEditTime: 2022-08-04 12:15:41
+ * @LastEditTime: 2022-08-05 16:43:02
  * @Description: 
 -->
 <!DOCTYPE html>
@@ -15,22 +15,32 @@
   <script src="../dist/vue.js"></script>
 </head>
 <body>
-  <div id="app">
-    {{ msg }}
-  </div>
+  <div id="app">{{ msg }}</div>
   <script>
+    const ChildComponent = {
+      template: `<div>Child Component</div>`,
+    }
     const vm = new Vue({
       el: '#app',
-      data: {
-        msg: 'Hello Vue.js'
+      components: {
+        ChildComponent
       },
-      directives: {
-        test() {
-          return 122
+      data: {
+        msg: 'watch'
+      },
+      watch: {
+        msg(newVal) {
+          console.log(newVal);
         }
+      },
+      methods: {
+        handleClick() {
+          this.msg = '123';
+        },
       }
-    })
+    });
     window.vm = vm;
+    console.log(vm.$options.components.KeepAlive);
   </script>
 </body>
 </html>
