@@ -39,6 +39,11 @@
         // or
         // console.log(this.$parent)
       },
+      methods: {
+        handleCreated() {
+          console.log('child created')
+        }
+      }
     }
 
     // 父实例可以通过 $children 访问到子实例

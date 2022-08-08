@@ -112,10 +112,12 @@ function initProps (vm: Component, propsOptions: Object) {
 
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 获取最终的 data 数据对象
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
   if (!isPlainObject(data)) {
+    // 如果data数据对象不是纯对象, 在非生产环境下会打印警告信息
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
       'data functions should return an object:\n' +
@@ -131,6 +133,7 @@ function initData (vm: Component) {
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
+      // 非生产环境下, 如果 methods 和 data 有同名的 key, 会打印警告信息
       if (methods && hasOwn(methods, key)) {
         warn(
           `Method "${key}" has already been defined as a data property.`,
@@ -152,6 +155,7 @@ function initData (vm: Component) {
   observe(data, true /* asRootData */)
 }
 
+// 调用 data 选项 (函数) 获取数据对象
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
   pushTarget()

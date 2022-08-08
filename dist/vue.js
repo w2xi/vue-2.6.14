@@ -3572,8 +3572,10 @@
     // they need to be reactive so that HOCs using them are always updated
     var parentData = parentVnode && parentVnode.data;
 
+    // 定义 $attrs 和 $listeners 响应式属性
     /* istanbul ignore else */
     {
+      // 在非生产环境下 当尝试设置 $attrs，$listeners 时，会执行回调
       defineReactive(vm, '$attrs', parentData && parentData.attrs || emptyObject, function () {
         !isUpdatingChildComponent && warn("$attrs is readonly.", vm);
       }, true);
@@ -3971,19 +3973,27 @@
     }
   }
 
+  // 将当前实例添加到父实例的 $children 属性里，并设置当前实例的 $parent 指向父实例
   function initLifecycle (vm) {
     var options = vm.$options;
 
-    // locate first non-abstract parent
+    // locate first non-abstract parent (查找第一个非抽象的父组件)
+    // 定义 parent，它引用当前实例的父组件
     var parent = options.parent;
+    // 抽象组件(abstract)的特点: 
+    // 1. 不渲染真实DOM. (比如 keep-alive transtion 这些内置的全局组件
+    // 2. 不会出现子父子关系的路径上
     if (parent && !options.abstract) {
+      // 使用 while 循环查找第一个非抽象的父组件
       while (parent.$options.abstract && parent.$parent) {
         parent = parent.$parent;
       }
+      // 此时，parent 应该是一个非抽象的组件，把它作为当前实例的父级，所以把当前实例 vm 添加到父级的 $children 属性里
       parent.$children.push(vm);
     }
-
+    // 设置当前实例的 $parent 属性，指向父级
     vm.$parent = parent;
+    // 设置 $root 属性，有父级就是用父级的 $root，否则 $root 指向自身
     vm.$root = parent ? parent.$root : vm;
 
     vm.$children = [];
@@ -4281,6 +4291,7 @@
   function callHook (vm, hook) {
     // #7573 disable dep collection when invoking lifecycle hooks
     pushTarget();
+    // 在`选项合并`中,我们和知道 生命周期钩子选项最终会被处理成一个数组
     var handlers = vm.$options[hook];
     var info = hook + " hook";
     if (handlers) {
@@ -4764,10 +4775,12 @@
 
   function initData (vm) {
     var data = vm.$options.data;
+    // 获取最终的 data 数据对象
     data = vm._data = typeof data === 'function'
       ? getData(data, vm)
       : data || {};
     if (!isPlainObject(data)) {
+      // 如果data数据对象不是纯对象, 在非生产环境下会打印警告信息
       data = {};
        warn(
         'data functions should return an object:\n' +
@@ -4783,6 +4796,7 @@
     while (i--) {
       var key = keys[i];
       {
+        // 非生产环境下, 如果 methods 和 data 有同名的 key, 会打印警告信息
         if (methods && hasOwn(methods, key)) {
           warn(
             ("Method \"" + key + "\" has already been defined as a data property."),
@@ -4804,6 +4818,7 @@
     observe(data, true /* asRootData */);
   }
 
+  // 调用 data 选项 (函数) 获取数据对象
   function getData (data, vm) {
     // #7573 disable dep collection when invoking data getters
     pushTarget();
