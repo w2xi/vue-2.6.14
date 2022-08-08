@@ -38,7 +38,9 @@ if (process.env.NODE_ENV !== 'production') {
     typeof Proxy !== 'undefined' && isNative(Proxy)
 
   if (hasProxy) {
+    // isBuiltInModifier 函数用来检测是否是内置的修饰符
     const isBuiltInModifier = makeMap('stop,prevent,self,ctrl,shift,alt,meta,exact')
+    // 为 config.keyCodes 设置 set 代理，防止内置修饰符被覆盖
     config.keyCodes = new Proxy(config.keyCodes, {
       set (target, key, value) {
         if (isBuiltInModifier(key)) {
@@ -55,6 +57,7 @@ if (process.env.NODE_ENV !== 'production') {
   const hasHandler = {
     has (target, key) {
       const has = key in target
+      // allowedGlobals 函数用来检测是否是模板中允许的全局标识符
       const isAllowed = allowedGlobals(key) ||
         (typeof key === 'string' && key.charAt(0) === '_' && !(key in target.$data))
       if (!has && !isAllowed) {
@@ -75,6 +78,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
   }
 
+  // 设置渲染函数的作用域代理，目的是提供更好的提示信息(模板中不存在该标识符时)
   initProxy = function initProxy (vm) {
     if (hasProxy) {
       // determine which proxy handler to use

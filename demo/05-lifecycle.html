@@ -1,0 +1,58 @@
+<!--
+ * @Author: w2xi
+ * @Date: 2022-07-28 16:00:51
+ * @LastEditors: w2xi
+ * @LastEditTime: 2022-08-08 11:35:15
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeCycle</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    {{ msg }}
+    <div>
+      <child-component />
+    </div>
+  </div>
+  <script>
+    // API https://cn.vuejs.org/v2/api/#parent
+
+    // 这也算是 `父子组件通信` 的一种方式
+
+    // 子组件本身并没有指定 parent 选项
+    const ChildComponent = {
+      data() {
+        return {
+           value: 'Child Component'
+        }
+      },
+      created() {
+        // 但是在子组件中访问父实例，能够找到正确的父实例引用 
+        console.log(this.$options.parent)
+        // or
+        // console.log(this.$parent)
+      },
+    }
+
+    // 父实例可以通过 $children 访问到子实例
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        msg: 'Life Cycle'
+      },
+      components: {
+        ChildComponent
+      },
+    });
+
+    window.vm = vm;
+  </script>
+</body>
+</html>

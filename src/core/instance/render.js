@@ -37,8 +37,10 @@ export function initRender (vm: Component) {
   // they need to be reactive so that HOCs using them are always updated
   const parentData = parentVnode && parentVnode.data
 
+  // 定义 $attrs 和 $listeners 响应式属性
   /* istanbul ignore else */
   if (process.env.NODE_ENV !== 'production') {
+    // 在非生产环境下 当尝试设置 $attrs，$listeners 时，会执行回调
     defineReactive(vm, '$attrs', parentData && parentData.attrs || emptyObject, () => {
       !isUpdatingChildComponent && warn(`$attrs is readonly.`, vm)
     }, true)

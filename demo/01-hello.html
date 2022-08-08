@@ -2,7 +2,7 @@
  * @Author: w2xi
  * @Date: 2022-07-28 16:00:51
  * @LastEditors: w2xi
- * @LastEditTime: 2022-08-04 12:15:41
+ * @LastEditTime: 2022-08-06 13:29:26
  * @Description: 
 -->
 <!DOCTYPE html>
@@ -16,7 +16,7 @@
 </head>
 <body>
   <div id="app">
-    {{ msg }}
+    {{ String(msg) }}
   </div>
   <script>
     const vm = new Vue({
@@ -24,11 +24,6 @@
       data: {
         msg: 'Hello Vue.js'
       },
-      directives: {
-        test() {
-          return 122
-        }
-      }
     })
     window.vm = vm;
   </script>
