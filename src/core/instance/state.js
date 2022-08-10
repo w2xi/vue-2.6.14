@@ -156,7 +156,7 @@ function initData (vm: Component) {
   }
   // 将 data 转换为 响应式
   // observe data
-  observe(data, true /* asRootData */)
+  observe(data, true /* asRootData */) 
 }
 
 // 调用 data 选项 (函数) 获取数据对象

@@ -4805,17 +4805,21 @@
         }
       }
       if (props && hasOwn(props, key)) {
+        // 非生产环境下, 如果 props 和 data 有同名的 key, 会打印警告信息
          warn(
           "The data property \"" + key + "\" is already declared as a prop. " +
           "Use prop default value instead.",
           vm
         );
       } else if (!isReserved(key)) {
+        // 检查key是否是以 `$` 或 `_` 开头，一般以 $ _ 开头的都是Vue自身的属性，这样做避免了冲突
+        // 将对 vm.key 的访问(getter)或设置(setter)代理到 vm['_data'][key]
         proxy(vm, "_data", key);
       }
     }
+    // 将 data 转换为 响应式
     // observe data
-    observe(data, true /* asRootData */);
+    observe(data, true /* asRootData */); 
   }
 
   // 调用 data 选项 (函数) 获取数据对象
