@@ -22,14 +22,16 @@
     const vm = new Vue({
       el: '#app',
       data: {
-        msg: 'Hello Vue.js'
+        msg: 'Hello Vue.js',
+        profile: {
+          address: 'China'
+        }
       },
     })
 
     vm.$watch('msg', (newVal) => {
       console.log('msg changed:', newVal);
     })
-    window.vm = vm;
   </script>
 </body>
 </html>

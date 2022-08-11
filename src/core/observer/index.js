@@ -43,15 +43,16 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    // 给数据对象定义 `__ob__` 属性(不可枚举的), 值就是当前 Observer 实例
     def(value, '__ob__', this)
-    if (Array.isArray(value)) {
+    if (Array.isArray(value)) { // 对数组的处理
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
         copyAugment(value, arrayMethods, arrayKeys)
       }
       this.observeArray(value)
-    } else {
+    } else {                   // 对纯对象的处理
       this.walk(value)
     }
   }
@@ -62,7 +63,9 @@ export class Observer {
    * value type is Object.
    */
   walk (obj: Object) {
+    // 获取所有可枚举属性
     const keys = Object.keys(obj)
+    // 遍历所有属性并将其转换成 getter/setter 的形式
     for (let i = 0; i < keys.length; i++) {
       defineReactive(obj, keys[i])
     }
@@ -106,12 +109,15 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * Attempt to create an observer instance for a value,
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
+ * @params value        要观测的数据
+ * @params asRootData   要被观测的数据是否是根级数据
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // __ob__ 属性值是 Observer 实例
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -130,7 +136,13 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 }
 
 /**
+ * 将数据对象的数据属性转换为访问器属性
  * Define a reactive property on an Object.
+ * @params obj 数据对象
+ * @params key 属性键名
+ * @params val 属性值
+ * @params customSetter
+ * @params shallow 是否是深度观测 false: 是 true: 否
  */
 export function defineReactive (
   obj: Object,
@@ -140,12 +152,15 @@ export function defineReactive (
   shallow?: boolean
 ) {
   const dep = new Dep()
+  // 在 getter/setter 中: 每一个数据字段都通过闭包引用着属于自己的 dep 常量
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
   }
 
+  // 属性本身可能已经存在 get/set
+  // 预先缓存属性原先的 getter/setter
   // cater for pre-defined getter/setters
   const getter = property && property.get
   const setter = property && property.set
@@ -160,6 +175,7 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 收集依赖
         dep.depend()
         if (childOb) {
           childOb.dep.depend()

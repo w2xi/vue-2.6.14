@@ -31,11 +31,13 @@
 
     // 监听 a 的变化, a 的值发生改变时 执行回调
     $watch('a', (newVal, oldVal) => {
+      // a
       console.log('new value:', newVal);
       console.log('old value:', oldVal);
     });
     // 监听 b 的变化, b 的值发生改变时 执行回调
     $watch('b', (newVal, oldVal) => {
+      // b
       console.log('new value:', newVal);
       console.log('old value:', oldVal);
     });
@@ -46,6 +48,7 @@
     // });
 
     $watch('profile.address', (newVal, oldVal) => {
+      // x
       console.log('new value:', newVal);
       console.log('old value:', oldVal);
     });
@@ -54,6 +57,7 @@
       for (let key in data) {
         // 依赖收集的 `容器`
         const dep = [];
+        console.log(dep);
         // 缓存字段原有的值
         let val = data[key];
         // 如果 val 是对象，递归调用 walk 函数将其转为访问器属性
@@ -62,8 +66,9 @@
           walk(val);
         }
         Object.defineProperty(data, key, {
-          get: function reactiveGetter() { // 收集依赖
+          get: function reactiveGetter() {
             if (Target) { // Target 就是依赖函数 
+              // 收集依赖
               dep.push(Target);
             }
             return val;
