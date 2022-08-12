@@ -154,7 +154,7 @@ function initData (vm: Component) {
       proxy(vm, `_data`, key)
     }
   }
-  // 将 data 转换为 响应式
+  // 将 data 对象转换为响应式数据
   // observe data
   observe(data, true /* asRootData */) 
 }
