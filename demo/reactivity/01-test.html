@@ -15,7 +15,9 @@
   <script src="../../dist/vue.js"></script>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    {{ profile.address }}
+  </div>
   <script>
     const data = {
       profile: {
@@ -28,23 +30,23 @@
     });
 
     // 响应式观测后的 data => 
-    const _data = {
-      profile: {
-        address: "China",
-        __ob__: {           // Observer 实例
-          value: profile,   // 指向 profile
-          dep: new Dep(),
-          vmCount: 0,
-        },
-        // address getter/setter 并通过闭包引用着 dep 和 childOb
-      },
-      __ob__: {             // Observer 实例
-        value: data,        // 指向 data，是一个循环引用
-        dep: new Dep(),     // Dep 实例
-        vmCount: 1,             
-      },
-      // profile getter/setter 并通过闭包引用着 dep 和 childOb
-    }
+    // const _data = {
+    //   profile: {
+    //     address: "China",
+    //     __ob__: {           // Observer 实例
+    //       value: profile,   // 指向 profile
+    //       dep: new Dep(),
+    //       vmCount: 0,
+    //     },
+    //     // address getter/setter 并通过闭包引用着 dep 和 childOb
+    //   },
+    //   __ob__: {             // Observer 实例
+    //     value: data,        // 指向 data，是一个循环引用
+    //     dep: new Dep(),     // Dep 实例
+    //     vmCount: 1,             
+    //   },
+    //   // profile getter/setter 并通过闭包引用着 dep 和 childOb
+    // }
   </script>
 </body>
 </html>

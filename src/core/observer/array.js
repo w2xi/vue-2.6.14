@@ -19,6 +19,7 @@ const methodsToPatch = [
 ]
 
 /**
+ * 使用 def 函数在 arrayMethods 上定义与数组变异方法同名的函数, 从而达到拦截的目的
  * Intercept mutating methods and emit events
  */
 methodsToPatch.forEach(function (method) {
@@ -37,6 +38,7 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
+    // 对新增元素进行观测
     if (inserted) ob.observeArray(inserted)
     // notify change
     ob.dep.notify()

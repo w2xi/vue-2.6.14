@@ -44,6 +44,8 @@ export class Observer {
     this.dep = new Dep()
     this.vmCount = 0
     // 给数据对象定义 `__ob__` 属性(不可枚举的), 值就是当前 Observer 实例
+    // __ob__ 属性以及 __ob__.dep 的主要作用是为了添加、删除属性时有能力触发依赖，
+    // 而这就是 Vue.set 或 Vue.delete 的原理
     def(value, '__ob__', this)
     if (Array.isArray(value)) { // 对数组的处理
       if (hasProto) {
@@ -176,6 +178,7 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // Dep.target 就是要被收集的依赖(观察者)
         // 收集依赖到 dep
         // 当属性值被修改时会触发依赖更新，即 set 中的 dep.notify()
         dep.depend()
@@ -184,6 +187,7 @@ export function defineReactive (
           // 当使用 Vue.set 或 vm.$set api 时会触发依赖更新，细节请查看 set 方法
           childOb.dep.depend()
           if (Array.isArray(value)) {
+            // 触发数组每个元素的依赖收集
             dependArray(value)
           }
         }
@@ -193,6 +197,7 @@ export function defineReactive (
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
+      // 如果新值和旧值没变 且 旧值和新值都是 NaN
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }
@@ -202,6 +207,7 @@ export function defineReactive (
       }
       // #7981: for accessor properties without setter
       if (getter && !setter) return
+      // 正确的设置属性值
       if (setter) {
         setter.call(obj, newVal)
       } else {

@@ -871,6 +871,7 @@
   ];
 
   /**
+   * 使用 def 函数在 arrayMethods 上定义与数组变异方法同名的函数, 从而达到拦截的目的
    * Intercept mutating methods and emit events
    */
   methodsToPatch.forEach(function (method) {
@@ -892,6 +893,7 @@
           inserted = args.slice(2);
           break
       }
+      // 对新增元素进行观测
       if (inserted) { ob.observeArray(inserted); }
       // notify change
       ob.dep.notify();
@@ -924,6 +926,8 @@
     this.dep = new Dep();
     this.vmCount = 0;
     // 给数据对象定义 `__ob__` 属性(不可枚举的), 值就是当前 Observer 实例
+    // __ob__ 属性以及 __ob__.dep 的主要作用是为了添加、删除属性时有能力触发依赖，
+    // 而这就是 Vue.set 或 Vue.delete 的原理
     def(value, '__ob__', this);
     if (Array.isArray(value)) { // 对数组的处理
       if (hasProto) {
@@ -1021,7 +1025,7 @@
    * @params key 属性键名
    * @params val 属性值
    * @params customSetter
-   * @params shallow 是否是深度观测 false: 是 true: 否
+   * @params shallow 是否是`非深度`观测，默认值是false表示深度观测的 (对 $attrs 和 $listeners 的观测就是非深度的)
    */
   function defineReactive (
     obj,
@@ -1030,14 +1034,15 @@
     customSetter,
     shallow
   ) {
-    var dep = new Dep();
     // 在 getter/setter 中: 每一个数据字段都通过闭包引用着属于自己的 dep 常量
+    // 这里收集的依赖，会在属性值被修改时触发依赖更新，即 set 中的 dep.notify()
+    var dep = new Dep();
 
     var property = Object.getOwnPropertyDescriptor(obj, key);
     if (property && property.configurable === false) {
       return
     }
-
+     
     // 属性本身可能已经存在 get/set
     // 预先缓存属性原先的 getter/setter
     // cater for pre-defined getter/setters
@@ -1054,11 +1059,16 @@
       get: function reactiveGetter () {
         var value = getter ? getter.call(obj) : val;
         if (Dep.target) {
-          // 收集依赖
+          // Dep.target 就是要被收集的依赖(观察者)
+          // 收集依赖到 dep
+          // 当属性值被修改时会触发依赖更新，即 set 中的 dep.notify()
           dep.depend();
           if (childOb) {
+            // 收集依赖到 childOb.dep 
+            // 当使用 Vue.set 或 vm.$set api 时会触发依赖更新，细节请查看 set 方法
             childOb.dep.depend();
             if (Array.isArray(value)) {
+              // 触发数组每个元素的依赖收集
               dependArray(value);
             }
           }
@@ -1068,6 +1078,7 @@
       set: function reactiveSetter (newVal) {
         var value = getter ? getter.call(obj) : val;
         /* eslint-disable no-self-compare */
+        // 如果新值和旧值没变 且 旧值和新值都是 NaN
         if (newVal === value || (newVal !== newVal && value !== value)) {
           return
         }
@@ -1077,6 +1088,7 @@
         }
         // #7981: for accessor properties without setter
         if (getter && !setter) { return }
+        // 正确的设置属性值
         if (setter) {
           setter.call(obj, newVal);
         } else {
@@ -1092,6 +1104,9 @@
    * Set a property on an object. Adds the new property and
    * triggers change notification if the property doesn't
    * already exist.
+   * @example 
+   * 
+   * // 使用 vm.$set or Vue.set 给对象添加响应式属性
    */
   function set (target, key, val) {
     if (
@@ -4833,7 +4848,7 @@
         proxy(vm, "_data", key);
       }
     }
-    // 将 data 转换为 响应式
+    // 将 data 对象转换为响应式数据
     // observe data
     observe(data, true /* asRootData */); 
   }
