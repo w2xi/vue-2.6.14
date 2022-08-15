@@ -16,13 +16,17 @@
 </head>
 <body>
   <div id="app">
-    {{ profile.address }}
+    {{ a }}
   </div>
   <script>
     const data = {
       profile: {
         address: 'China'
-      }
+      },
+      arr: [
+        { a: 1 },
+      ],
+      a: 1212
     };
     const vm = new Vue({
       el: '#app',
