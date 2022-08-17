@@ -71,6 +71,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const isRoot = !vm.$parent
   // root instance props should be converted
   if (!isRoot) {
+    // 非根实例 无需调用 obserse() 观测
     toggleObserving(false)
   }
   for (const key in propsOptions) {
@@ -79,6 +80,7 @@ function initProps (vm: Component, propsOptions: Object) {
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
+      // 非生产环境下 如果是 Vue 保留的属性, 打印警告信息
       if (isReservedAttribute(hyphenatedKey) ||
           config.isReservedAttr(hyphenatedKey)) {
         warn(
@@ -86,6 +88,9 @@ function initProps (vm: Component, propsOptions: Object) {
           vm
         )
       }
+      // 非生产环境下
+      // 定义响应式属性
+      // 直接给 prop 设置值会打印警告信息
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
@@ -98,12 +103,14 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 定义响应式属性
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
+      // 将对 vm.key 的访问(getter)或设置(setter)代理到 vm['_props'][key]
       proxy(vm, `_props`, key)
     }
   }
@@ -149,7 +156,8 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
-      // 检查key是否是以 `$` 或 `_` 开头，一般以 $ _ 开头的都是Vue自身的属性，这样做避免了冲突
+      // isReserved 检查key是否是以 `$` 或 `_` 开头，一般以 $ _ 开头的都是Vue自身的属性，这样做避免了冲突
+
       // 将对 vm.key 的访问(getter)或设置(setter)代理到 vm['_data'][key]
       proxy(vm, `_data`, key)
     }
@@ -207,6 +215,8 @@ function initComputed (vm: Component, computed: Object) {
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 非生产环境下
+      // 如果 computed 的 key 与 data, props, methods 的键名冲突, 打印警告信息
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -274,6 +284,7 @@ function initMethods (vm: Component, methods: Object) {
   const props = vm.$options.props
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
+      // methods 的每个属性值都应该是 函数
       if (typeof methods[key] !== 'function') {
         warn(
           `Method "${key}" has type "${typeof methods[key]}" in the component definition. ` +
@@ -281,6 +292,7 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
+      // 键名与 props 的属性冲突
       if (props && hasOwn(props, key)) {
         warn(
           `Method "${key}" has already been defined as a prop.`,
@@ -294,6 +306,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
+    // 直接在 vm 实例上定义和 methods 同名的 key
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }
@@ -317,6 +330,17 @@ function createWatcher (
   handler: any,
   options?: Object
 ) {
+  // watch 有多种写法
+  // 1. 键值是一个 function 
+  // 2. 键值是一个纯对象( 带有 handler 等属性 )
+  // 3. 键值是一个字符串
+  // watch: {
+  //  a(newVal){},
+  //  b: {
+  //    handler(){}
+  //  },
+  //  c: 'foo'
+  // }
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler

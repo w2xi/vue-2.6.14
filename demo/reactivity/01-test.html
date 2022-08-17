@@ -31,6 +31,21 @@
     const vm = new Vue({
       el: '#app',
       data,
+      watch: {
+        // a: [
+        //   (newVal) => console.log(newVal),
+        //   (newVal) => console.log(newVal),
+        // ],
+        a: 'foo'
+      },
+      created() {
+        console.log('created')
+      },
+      methods: {
+        foo(newVal) {
+          console.log('foo', newVal);
+        },
+      }
     });
 
     // 响应式观测后的 data => 
