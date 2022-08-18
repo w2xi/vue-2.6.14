@@ -19,12 +19,14 @@ const idToTemplate = cached(id => {
 // 缓存 Vue.prototype.$mount
 const mount = Vue.prototype.$mount
 // 重写 Vue.prototype.$mount 方法
+// 重写的目的是为了给运行时版的 $mount 函数增加模板编译的能力
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
   el = el && query(el)
 
+  // 如果挂载点是 <body> 或 <html>, 会打印警告信息 
   /* istanbul ignore if */
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -36,6 +38,9 @@ Vue.prototype.$mount = function (
   const options = this.$options
   // resolve template/el and convert to render function
   if (!options.render) {
+    // 使用 template 或 el 选项构建渲染函数
+    // 最终 template 会被转换为 模板字符串 (理想情况下)
+
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
@@ -65,7 +70,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
-
+      // 使用 compileToFunctions 函数 将模板(template)字符串编译成渲染函数(render)
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -83,6 +88,8 @@ Vue.prototype.$mount = function (
       }
     }
   }
+
+  // 调用运行时版的 $mount 函数
   return mount.call(this, el, hydrating)
 }
 
