@@ -44,35 +44,44 @@ export default class Watcher {
   value: any;
 
   constructor (
-    vm: Component,
-    expOrFn: string | Function,
-    cb: Function,
-    options?: ?Object,
-    isRenderWatcher?: boolean
+    vm: Component,                // 组件实例对象
+    expOrFn: string | Function,   // 要观察的表达式
+    cb: Function,                 // 当观察的表达式的值变化时的回调函数
+    options?: ?Object,            // 传递的选项
+    isRenderWatcher?: boolean     // 标识该观察者实例是否是渲染函数的观察者
   ) {
     this.vm = vm
+    // 如果是渲染函数的观察者
     if (isRenderWatcher) {
+      // _watcher 属性是在 initLifecycle 函数中初始化的，其初始化为 null 
       vm._watcher = this
     }
+    // _watchers 属性是在 initState 函数中初始化的，初始值是一个空数组
+    // 属于该组件实例的观察者都会被添加到组件实例的 vm._watchers 数组中
     vm._watchers.push(this)
     // options
     if (options) {
-      this.deep = !!options.deep
-      this.user = !!options.user
-      this.lazy = !!options.lazy
-      this.sync = !!options.sync
-      this.before = options.before
+      this.deep = !!options.deep    // 用来告诉当前观察者实例对象是否是深度观测
+      this.user = !!options.user    // 用来标识当前观察者实例对象是 开发者定义的 还是 内部定义的
+      this.lazy = !!options.lazy    // 用来标识当前观察者实例对象是否惰性求值
+      this.sync = !!options.sync    // 用来告诉观察者当数据变化时是否同步求值并执行回调
+      this.before = options.before  // Watcher 实例的钩子，当数据变化之后，触发更新之前，调用在创建渲染函数的观察者实例对象时传递的 before 选项
     } else {
       this.deep = this.user = this.lazy = this.sync = false
     }
+    
     this.cb = cb
     this.id = ++uid // uid for batching
     this.active = true
     this.dirty = this.lazy // for lazy watchers
+
+    // 用于解决收集重复依赖
     this.deps = []
     this.newDeps = []
     this.depIds = new Set()
     this.newDepIds = new Set()
+    
+    // 在生产环境下是空字符串，在非生产环境下为表达式的字符串表示
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
@@ -104,6 +113,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
+      // 调用 getter 触发依赖收集 
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

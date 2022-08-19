@@ -339,7 +339,7 @@ function createWatcher (
   //  b: {
   //    handler(){}
   //  },
-  //  c: 'foo'
+  //  c: 'foo', // 这里的 foo 是 methods 中的 key
   // }
   if (isPlainObject(handler)) {
     options = handler

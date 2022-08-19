@@ -155,6 +155,7 @@ export function mountComponent (
 ): Component {
   vm.$el = el
   if (!vm.$options.render) {
+    // 此时 render 函数仅用于渲染一个空的 vnode 对象
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
@@ -176,6 +177,7 @@ export function mountComponent (
   }
   callHook(vm, 'beforeMount')
 
+  // 定义并初始化 updateComponent 函数，用于 Watcher 构造函数的第二个参数
   let updateComponent
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -185,18 +187,23 @@ export function mountComponent (
       const startTag = `vue-perf-start:${id}`
       const endTag = `vue-perf-end:${id}`
 
+      // 统计 vm._render() 函数的运行性能
       mark(startTag)
       const vnode = vm._render()
       mark(endTag)
       measure(`vue ${name} render`, startTag, endTag)
 
+      // 统计 vm._update() 函数的运行性能
       mark(startTag)
       vm._update(vnode, hydrating)
       mark(endTag)
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
+    // 把渲染函数生成的虚拟DOM渲染成真正的DOM
     updateComponent = () => {
+      // vm._render 函数的作用是调用 vm.$options.render 函数并返回生成的虚拟节点(vnode)
+      // vm._update 函数的作用是把 vm._render 函数生成的虚拟节点渲染成真正的 DOM
       vm._update(vm._render(), hydrating)
     }
   }

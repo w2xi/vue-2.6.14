@@ -4130,6 +4130,7 @@
   ) {
     vm.$el = el;
     if (!vm.$options.render) {
+      // 此时 render 函数仅用于渲染一个空的 vnode 对象
       vm.$options.render = createEmptyVNode;
       {
         /* istanbul ignore if */
@@ -4151,6 +4152,7 @@
     }
     callHook(vm, 'beforeMount');
 
+    // 定义并初始化 updateComponent 函数，用于 Watcher 构造函数的第二个参数
     var updateComponent;
     /* istanbul ignore if */
     if ( config.performance && mark) {
@@ -4160,18 +4162,23 @@
         var startTag = "vue-perf-start:" + id;
         var endTag = "vue-perf-end:" + id;
 
+        // 统计 vm._render() 函数的运行性能
         mark(startTag);
         var vnode = vm._render();
         mark(endTag);
         measure(("vue " + name + " render"), startTag, endTag);
 
+        // 统计 vm._update() 函数的运行性能
         mark(startTag);
         vm._update(vnode, hydrating);
         mark(endTag);
         measure(("vue " + name + " patch"), startTag, endTag);
       };
     } else {
+      // 把渲染函数生成的虚拟DOM渲染成真正的DOM
       updateComponent = function () {
+        // vm._render 函数的作用是调用 vm.$options.render 函数并返回生成的虚拟节点(vnode)
+        // vm._update 函数的作用是把 vm._render 函数生成的虚拟节点渲染成真正的 DOM
         vm._update(vm._render(), hydrating);
       };
     }
@@ -4527,35 +4534,44 @@
    * This is used for both the $watch() api and directives.
    */
   var Watcher = function Watcher (
-    vm,
-    expOrFn,
-    cb,
-    options,
-    isRenderWatcher
+    vm,              // 组件实例对象
+    expOrFn, // 要观察的表达式
+    cb,               // 当观察的表达式的值变化时的回调函数
+    options,          // 传递的选项
+    isRenderWatcher   // 标识该观察者实例是否是渲染函数的观察者
   ) {
     this.vm = vm;
+    // 如果是渲染函数的观察者
     if (isRenderWatcher) {
+      // _watcher 属性是在 initLifecycle 函数中初始化的，其初始化为 null 
       vm._watcher = this;
     }
+    // _watchers 属性是在 initState 函数中初始化的，初始值是一个空数组
+    // 属于该组件实例的观察者都会被添加到组件实例的 vm._watchers 数组中
     vm._watchers.push(this);
     // options
     if (options) {
-      this.deep = !!options.deep;
-      this.user = !!options.user;
-      this.lazy = !!options.lazy;
-      this.sync = !!options.sync;
-      this.before = options.before;
+      this.deep = !!options.deep;  // 用来告诉当前观察者实例对象是否是深度观测
+      this.user = !!options.user;  // 用来标识当前观察者实例对象是 开发者定义的 还是 内部定义的
+      this.lazy = !!options.lazy;  // 用来标识当前观察者实例对象是否惰性求值
+      this.sync = !!options.sync;  // 用来告诉观察者当数据变化时是否同步求值并执行回调
+      this.before = options.before;// Watcher 实例的钩子，当数据变化之后，触发更新之前，调用在创建渲染函数的观察者实例对象时传递的 before 选项
     } else {
       this.deep = this.user = this.lazy = this.sync = false;
     }
+      
     this.cb = cb;
     this.id = ++uid$1; // uid for batching
     this.active = true;
     this.dirty = this.lazy; // for lazy watchers
+
+    // 用于解决收集重复依赖
     this.deps = [];
     this.newDeps = [];
     this.depIds = new _Set();
     this.newDepIds = new _Set();
+      
+    // 在生产环境下是空字符串，在非生产环境下为表达式的字符串表示
     this.expression =  expOrFn.toString()
       ;
     // parse expression for getter
@@ -4586,6 +4602,7 @@
     var value;
     var vm = this.vm;
     try {
+      // 调用 getter 触发依赖收集 
       value = this.getter.call(vm, vm);
     } catch (e) {
       if (this.user) {
@@ -5032,7 +5049,7 @@
     //  b: {
     //    handler(){}
     //  },
-    //  c: 'foo'
+    //  c: 'foo', // 这里的 foo 是 methods 中的 key
     // }
     if (isPlainObject(handler)) {
       options = handler;
@@ -5244,10 +5261,18 @@
 
   // 将 Vue 作为参数传递给导入的五个方法
   // 在 Vue.prototype 上添加属性和方法
+
+  // 定义了 _init 方法，用于 Vue 构造函数内部的初始化操作
   initMixin(Vue);
+  // 定义了:
+  // 属性：$data (代理 _data), $props (代理 _props) 只读属性
+  // 方法: $set, $del, $watch
   stateMixin(Vue);
+  // 定义了 $on, $once, $off, $emit 四个方法
   eventsMixin(Vue);
+  // 定义了 _update, $forceUpdate, $destroy 三个方法
   lifecycleMixin(Vue);
+  // 定义了 $nextTick, _render 等方法
   renderMixin(Vue);
 
   /*  */
@@ -9258,6 +9283,7 @@
   // install platform patch function
   Vue.prototype.__patch__ = inBrowser ? patch : noop;
 
+  // 运行时 $mount 方法
   // public mount method
   Vue.prototype.$mount = function (
     el,
