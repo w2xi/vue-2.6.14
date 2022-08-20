@@ -138,10 +138,12 @@ export default class Watcher {
    */
   addDep (dep: Dep) {
     const id = dep.id
+    // 避免收集重复依赖
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
       if (!this.depIds.has(id)) {
+        // 真正收集观察者
         dep.addSub(this)
       }
     }
