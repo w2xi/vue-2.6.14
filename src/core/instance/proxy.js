@@ -1,3 +1,10 @@
+/*
+ * @Author: w2xi
+ * @Date: 2022-05-18 10:43:00
+ * @LastEditors: w2xi
+ * @LastEditTime: 2022-08-20 15:11:28
+ * @Description: 
+ */
 /* not type checking this file because flow doesn't play well with Proxy */
 
 import config from 'core/config'
@@ -83,6 +90,7 @@ if (process.env.NODE_ENV !== 'production') {
     if (hasProxy) {
       // determine which proxy handler to use
       const options = vm.$options
+      // 绝大部分情况下是 hasHandler
       const handlers = options.render && options.render._withStripped
         ? getHandler
         : hasHandler

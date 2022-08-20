@@ -100,6 +100,7 @@ export default class Watcher {
         )
       }
     }
+    // 保存被观察目标的值
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -113,7 +114,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
-      // 调用 getter 触发依赖收集 
+      // 调用 getter 触发依赖收集 并 对被观察目标求值
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -139,6 +140,8 @@ export default class Watcher {
   addDep (dep: Dep) {
     const id = dep.id
     // 避免收集重复依赖
+    // newDepIds 用来避免 [一次求值] 的过程中收集重复的依赖
+    // depIds    用来避免 [多次求值] 的过程中收集重复的依赖
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
@@ -160,6 +163,13 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+    // 最终结果:
+    // newDepIds 和 newDeps 被清空
+    // 但是被清空之前把值分别赋给了 depIds 和 deps, 即:
+    // depIds = newDepIds
+    // deps   = newDeps
+
+    // 引用类型变量交换
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
