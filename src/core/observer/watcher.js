@@ -62,7 +62,7 @@ export default class Watcher {
     // options
     if (options) {
       this.deep = !!options.deep    // 用来告诉当前观察者实例对象是否是深度观测
-      this.user = !!options.user    // 用来标识当前观察者实例对象是 开发者定义的 还是 内部定义的
+      this.user = !!options.user    // 用来标识当前观察者实例对象是 开发者定义的(使用 watch 选项或 $watch) 还是 内部定义的
       this.lazy = !!options.lazy    // 用来标识当前观察者实例对象是否惰性求值
       this.sync = !!options.sync    // 用来告诉观察者当数据变化时是否同步求值并执行回调
       this.before = options.before  // Watcher 实例的钩子，当数据变化之后，触发更新之前，调用在创建渲染函数的观察者实例对象时传递的 before 选项
@@ -114,7 +114,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
-      // 调用 getter 触发依赖收集 并 对被观察目标求值
+      // 调用 getter 触发依赖收集 并 对被观察目标[求值]
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -129,6 +129,8 @@ export default class Watcher {
         traverse(value)
       }
       popTarget()
+      // [求值] 结束后会清空 newDepIds 和 newDeps 这两个属性的值
+      // 但是被清空之前把值分别赋给了 depIds 和 deps
       this.cleanupDeps()
     }
     return value
@@ -156,6 +158,11 @@ export default class Watcher {
    * Clean up for dependency collection.
    */
   cleanupDeps () {
+    // 移除废弃的观察者 (Wacther)
+    // 对上一次求值收集到的 Dep 实例对象进行遍历
+    // 如果上次求值收集到的 Dep 实例对象 不在 当前这次求值所收集的 Dep 实例对象中
+    // 则说明该 Dep 实例对象已经和该观察者对象不存在依赖关系了
+    // 这时候就会调用 dep.removeSub(this) 方法, 从而将该观察者对象从 Dep 实例对象中移除
     let i = this.deps.length
     while (i--) {
       const dep = this.deps[i]
@@ -168,6 +175,10 @@ export default class Watcher {
     // 但是被清空之前把值分别赋给了 depIds 和 deps, 即:
     // depIds = newDepIds
     // deps   = newDeps
+
+    // 结论:
+    // newDepIds 和 newDeps 存储的总是当次求值所收集到的 Dep 实例对象
+    // depIds 和 deps 存储的总是上一次求值过程中所收集到的 Dep 实例对象
 
     // 引用类型变量交换
     let tmp = this.depIds
@@ -201,6 +212,12 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
+      // 重新求值
+      // 1.对于渲染函数的观察者:
+      //  重新求值其实等价于重新执行渲染函数,最终结果就是重新生成虚拟DOM并更新真是DOM,这样就完成了重新渲染的过程.
+      //  这里,this.get() 的返回值其实就是 updateComponet() 的返回值, 这个值是 undefined
+      // 2.对于非渲染函数的观察者
+
       const value = this.get()
       if (
         value !== this.value ||
@@ -213,10 +230,13 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
+        // this.user 为真 意味着观察者是开发者定义的, 即通过 watch 选项或 $watch 函数定义的观察者
+        // 这些观察者的特点就是回调函数是由开发者编写的, 意味着回调函数的执行是不可预知的
         if (this.user) {
           const info = `callback for watcher "${this.expression}"`
           invokeWithErrorHandling(this.cb, this.vm, [value, oldValue], this.vm, info)
         } else {
+          // 执行观察者的回调函数
           this.cb.call(this.vm, value, oldValue)
         }
       }

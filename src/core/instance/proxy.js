@@ -1,10 +1,3 @@
-/*
- * @Author: w2xi
- * @Date: 2022-05-18 10:43:00
- * @LastEditors: w2xi
- * @LastEditTime: 2022-08-20 15:11:28
- * @Description: 
- */
 /* not type checking this file because flow doesn't play well with Proxy */
 
 import config from 'core/config'

@@ -182,6 +182,8 @@ export function defineReactive (
         // 收集依赖到 dep
         // 当属性值被修改时会触发依赖更新，即 set 中的 dep.notify()
         dep.depend()
+        console.log('key', key)
+        console.log(dep)
         if (childOb) {
           // 收集依赖到 childOb.dep 
           // 当使用 Vue.set 或 vm.$set api 时会触发依赖更新，细节请查看 set 方法
