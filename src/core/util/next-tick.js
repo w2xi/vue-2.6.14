@@ -105,6 +105,7 @@ export function nextTick (cb?: Function, ctx?: Object) {
 
   if (!pending) {
     pending = true
+    // 将 flushCallbacks 注册为 microtask
     timerFunc()
   }
 
