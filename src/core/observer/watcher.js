@@ -202,6 +202,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      // 将观察者放到一个队列中等待所有突变完成之后统一执行更新
       queueWatcher(this)
     }
   }
@@ -214,7 +215,7 @@ export default class Watcher {
     if (this.active) {
       // 重新求值
       // 1.对于渲染函数的观察者:
-      //  重新求值其实等价于重新执行渲染函数,最终结果就是重新生成虚拟DOM并更新真是DOM,这样就完成了重新渲染的过程.
+      //  重新求值其实等价于重新执行渲染函数,最终结果就是重新生成虚拟DOM并更新真实DOM,这样就完成了重新渲染的过程.
       //  这里,this.get() 的返回值其实就是 updateComponet() 的返回值, 这个值是 undefined
       // 2.对于非渲染函数的观察者
 

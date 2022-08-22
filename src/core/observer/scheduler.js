@@ -164,10 +164,14 @@ function callActivatedHooks (queue) {
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
+    // 避免相同的观察者重复入队
     has[id] = true
     if (!flushing) {
       queue.push(watcher)
     } else {
+      // flushing 为真，说明队列正在执行更新，这时候如果有观察者入队，就会执行下面这段代码
+      // 下面这段代码的作用: 保证观察者的执行顺序
+
       // if already flushing, splice the watcher based on its id
       // if already past its id, it will be run next immediately.
       let i = queue.length - 1
@@ -178,6 +182,7 @@ export function queueWatcher (watcher: Watcher) {
     }
     // queue the flush
     if (!waiting) {
+      // waiting 保证了该 if 语句块的代码只会执行一次
       waiting = true
 
       if (process.env.NODE_ENV !== 'production' && !config.async) {

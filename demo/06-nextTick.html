@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$nextTick</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        
+      },
+      created() {
+        // $nextTick 中的回调会被注册为 microtask
+        // 调用栈清空后才会被执行
+        this.$nextTick(() => console.log(1))
+        this.$nextTick(() => console.log(2))
+        this.$nextTick(() => console.log(3))
+      },
+    })
+    window.vm = vm;
+  </script>
+</body>
+</html>

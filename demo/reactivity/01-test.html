@@ -9,7 +9,7 @@
 </head>
 <body>
   <div id="app">
-    {{ a }}
+    {{ name }} {{ age }}
   </div>
   <script>
     const data = {
@@ -19,27 +19,16 @@
       arr: [
         { a: 1 },
       ],
-      a: 1212
+      name: '小明',
+      age: 21,
     };
     const vm = new Vue({
       el: '#app',
-      // template: '<div id="bar">bar</div>',
       data,
-      // watch: {
-      //   // a: [
-      //   //   (newVal) => console.log(newVal),
-      //   //   (newVal) => console.log(newVal),
-      //   // ],
-      //   a: 'foo',
-      // },
-      created() {
-        console.log('created')
+      mounted() {
+        this.name = 'w2xi'
+        this.age = 24
       },
-      methods: {
-        foo(newVal) {
-          console.log('foo', newVal);
-        },
-      }
     });
 
     // 响应式观测后的 data => 

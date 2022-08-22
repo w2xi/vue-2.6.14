@@ -8,6 +8,7 @@ import { isIE, isIOS, isNative } from './env'
 export let isUsingMicroTask = false
 
 const callbacks = []
+// 一个标识，它的真假代表回调队列是否处于等待刷新的状态
 let pending = false
 
 function flushCallbacks () {
@@ -97,10 +98,19 @@ export function nextTick (cb?: Function, ctx?: Object) {
       _resolve(ctx)
     }
   })
+
+  // pending: 一个标识，它的真假代表回调队列是否处于等待刷新的状态
+  // 初始值是 false，表示回调队列为空不需要等待刷新
+  // 如果为 true，表示回调队列不为空，正在等待刷新
+
   if (!pending) {
     pending = true
     timerFunc()
   }
+
+  // 使用 vm.$nextTick 方法:
+  // 如果不传 cb (回调函数) 参数，将会返回一个 Promise 实例对象
+
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {
