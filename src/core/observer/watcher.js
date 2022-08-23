@@ -72,6 +72,7 @@ export default class Watcher {
     
     this.cb = cb
     this.id = ++uid // uid for batching
+    // 当前 Watcher 实例是否是处于激活状态的, 默认是激活的
     this.active = true
     this.dirty = this.lazy // for lazy watchers
 
@@ -271,9 +272,15 @@ export default class Watcher {
       // remove self from vm's watcher list
       // this is a somewhat expensive operation so we skip it
       // if the vm is being destroyed.
+
+      // 每个组件实例都有一个 vm._isBeingDestroyed 属性( 定义在 lifecycle.js 文件的 initLifecycle 函数中 ) 
+      // 用来标识该组件实例是否已经被销毁
+
       if (!this.vm._isBeingDestroyed) {
+        // 将当前 观察者实例对象 从 组件实例对象的 vm._watchers 数组中移除
         remove(this.vm._watchers, this)
       }
+      // 将当前观察者实例对象从所有的 Dep 实例对象中移除
       let i = this.deps.length
       while (i--) {
         this.deps[i].removeSub(this)

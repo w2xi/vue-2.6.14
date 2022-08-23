@@ -330,17 +330,6 @@ function createWatcher (
   handler: any,
   options?: Object
 ) {
-  // watch 有多种写法
-  // 1. 键值是一个 function 
-  // 2. 键值是一个纯对象( 带有 handler 等属性 )
-  // 3. 键值是一个字符串
-  // watch: {
-  //  a(newVal){},
-  //  b: {
-  //    handler(){}
-  //  },
-  //  c: 'foo', // 这里的 foo 是 methods 中的 key
-  // }
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler
@@ -387,17 +376,23 @@ export function stateMixin (Vue: Class<Component>) {
   ): Function {
     const vm: Component = this
     if (isPlainObject(cb)) {
+      // 因为在使用 watch 选项时 cb 参数可能时是一个纯对象( 包含 handler 等属性 )
+      // 这里目的是为了让 vm.$watch api 和 watch 选项 保持一致
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
+    // user: 用来标识该观察者实例对象是由开发者定义的
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // immediate: 是否立即执行回调 
     if (options.immediate) {
       const info = `callback for immediate watcher "${watcher.expression}"`
       pushTarget()
       invokeWithErrorHandling(cb, vm, [watcher.value], vm, info)
       popTarget()
     }
+
+    // unwatchFn: 解除当前观察者对属性的观察
     return function unwatchFn () {
       watcher.teardown()
     }
