@@ -120,6 +120,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   }
   let ob: Observer | void
   // __ob__ 属性值是 Observer 实例
+  // 这里的 if 条件判断是用来解决`循环引用`的
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -182,8 +183,6 @@ export function defineReactive (
         // 收集依赖到 dep
         // 当属性值被修改时会触发依赖更新，即 set 中的 dep.notify()
         dep.depend()
-        console.log('key', key)
-        console.log(dep)
         if (childOb) {
           // 收集依赖到 childOb.dep 
           // 当使用 Vue.set 或 vm.$set api 时会触发依赖更新，细节请查看 set 方法

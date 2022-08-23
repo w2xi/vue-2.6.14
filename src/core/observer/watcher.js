@@ -127,6 +127,11 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
+        // deep 为 true 表示深度观测
+        // 将被观测属性的值 value 传递给 traverse 函数, 
+        // 然后 递归地读取被观测属性的所有子属性的值 ( 触发 getter )
+        // 这样被观测属性的所有子属性都将会收集到观察者, 从而达到深度观测的目的
+
         traverse(value)
       }
       popTarget()
