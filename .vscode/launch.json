@@ -8,22 +8,29 @@
       "type": "chrome",
       "request": "launch",
       "name": "Open 01-hello.html",
-      "file": "d:\\wwwroot\\source-code\\vue-2.6.14\\demo\\01-hello.html",
-      "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/01-hello.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
     },
     {
       "type": "chrome",
       "request": "launch",
       "name": "Open 04-assets-options.merge.html",
-      "file": "d:\\wwwroot\\source-code\\vue-2.6.14\\demo\\04-assets-options.merge.html",
-      "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      "file": "d/home/w2xi/projects/github/vue-2.6.14/demo/04-assets-options.merge.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
     },
     {
       "type": "chrome",
       "request": "launch",
       "name": "Open 05-lifecycle.html",
-      "file": "d:\\wwwroot\\source-code\\vue-2.6.14\\demo\\05-lifecycle.html",
-      "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/05-lifecycle.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open 01-test.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/reactivity/01-test.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
     },
   ]
 }
