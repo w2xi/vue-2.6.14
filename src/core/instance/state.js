@@ -184,14 +184,17 @@ export function getData (data: Function, vm: Component): any {
 const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
+  // vm._computedWatchers: 存储计算属性的观察者
+
   // $flow-disable-line
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
-
+  // 遍历计算属性
   for (const key in computed) {
     const userDef = computed[key]
     const getter = typeof userDef === 'function' ? userDef : userDef.get
+    // 非生产环境下: 如果 getter 不存在，则会打印警告信息，提示 计算属性没有对应的 getter
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
         `Getter is missing for computed property "${key}".`,
@@ -200,6 +203,10 @@ function initComputed (vm: Component, computed: Object) {
     }
 
     if (!isSSR) {
+      // 创建 计算属性的观察者
+      // 传递给 观察者的选项参数(options)是 computedWatcherOptions: { lazy: true }
+      // lazy 为 true 表示是惰性取值
+      
       // create internal watcher for the computed property.
       watchers[key] = new Watcher(
         vm,
@@ -249,6 +256,7 @@ export function defineComputed (
   }
   if (process.env.NODE_ENV !== 'production' &&
       sharedPropertyDefinition.set === noop) {
+    // 非生产环境下 如果计算属性未定义 setter，当给计算属性设置值时 会打印警告信息
     sharedPropertyDefinition.set = function () {
       warn(
         `Computed property "${key}" was assigned to but it has no setter.`,
