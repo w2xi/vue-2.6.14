@@ -71,7 +71,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const isRoot = !vm.$parent
   // root instance props should be converted
   if (!isRoot) {
-    // 非根实例 无需调用 obserse() 观测
+    // 非根实例 无需调用 obserse 函数观测
     toggleObserving(false)
   }
   for (const key in propsOptions) {
@@ -184,7 +184,7 @@ export function getData (data: Function, vm: Component): any {
 const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
-  // vm._computedWatchers: 存储计算属性的观察者
+  // vm._computedWatchers 用来存储计算属性的观察者
 
   // $flow-disable-line
   const watchers = vm._computedWatchers = Object.create(null)
@@ -193,6 +193,7 @@ function initComputed (vm: Component, computed: Object) {
   // 遍历计算属性
   for (const key in computed) {
     const userDef = computed[key]
+    // 计算属性的观察者的求值函数
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     // 非生产环境下: 如果 getter 不存在，则会打印警告信息，提示 计算属性没有对应的 getter
     if (process.env.NODE_ENV !== 'production' && getter == null) {
@@ -205,7 +206,7 @@ function initComputed (vm: Component, computed: Object) {
     if (!isSSR) {
       // 创建 计算属性的观察者
       // 传递给 观察者的选项参数(options)是 computedWatcherOptions: { lazy: true }
-      // lazy 为 true 表示是惰性取值
+      // lazy 为 true 表示是惰性求值
       
       // create internal watcher for the computed property.
       watchers[key] = new Watcher(
@@ -240,6 +241,8 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
+  // 标识是否缓存值
+  // 只有在非服务端渲染的情况下计算属性才会缓存值
   const shouldCache = !isServerRendering()
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
@@ -264,6 +267,7 @@ export function defineComputed (
       )
     }
   }
+  // 在组件实例对象上定义和计算属性同名的组件实例属性, 而且是一个访问器属性
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
@@ -272,8 +276,11 @@ function createComputedGetter (key) {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
       if (watcher.dirty) {
+        // 执行 getter 函数对计算属性求值
+        // 求值之后 观察者的 dirty 属性被设置为 false
         watcher.evaluate()
       }
+      // 这里的 Dep.target 的值是 [渲染函数的观察者对象]
       if (Dep.target) {
         watcher.depend()
       }
