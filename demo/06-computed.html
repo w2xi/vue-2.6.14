@@ -14,6 +14,7 @@
   <script>
     /*
       模板会被编译成渲染函数, 渲染函数的执行将触发计算属性 compA 的 get 拦截器函数,
+      即下面的 computedGetter 函数被执行。
       在非服务端渲染的情况下, compA 的 拦截器函数为:
 
       sharedPropertyDefinition.get = function computedGetter () {
@@ -21,18 +22,17 @@
         const watcher = this._computedWatchers && this._computedWatchers[key]
         if (watcher) {
           if (watcher.dirty) { // for lazy watcher
-            // 对计算属性求值
+            // 对计算属性求值，即执行计算属性的 getter，这里是: function() { return this.a + 1 }
             // 求值之后 观察者的 dirty 属性被设置为 false
             watcher.evaluate()
           }
+          // 这里的 Dep.target 的值是 渲染函数的观察者
           if (Dep.target) {
             watcher.depend()
           }
           return watcher.value
         }
       }
-
-      当读取 compA 属性时, computedGetter 函数被执行
     */
     const vm = new Vue({
       el: '#app',
