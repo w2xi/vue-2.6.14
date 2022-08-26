@@ -14,25 +14,35 @@
   <script>
     /*
       模板会被编译成渲染函数, 渲染函数的执行将触发计算属性 compA 的 get 拦截器函数,
-      即下面的 computedGetter 函数被执行。
+      即下面的 computedGetter 函数被执行, 执行返回的结果就是计算属性的值。
+      渲染函数执行 -> 虚拟 DOM -> 真实 DOM
       在非服务端渲染的情况下, compA 的 拦截器函数为:
 
       sharedPropertyDefinition.get = function computedGetter () {
-        // 计算属性的观察者对象
+        // 计算属性的观察者实例对象
         const watcher = this._computedWatchers && this._computedWatchers[key]
         if (watcher) {
           if (watcher.dirty) { // for lazy watcher
             // 对计算属性求值，即执行计算属性的 getter，这里是: function() { return this.a + 1 }
+            // 执行 getter 函数会访问 属性 a，
+            // 这将会触发 属性 a 的 get 拦截器函数, 即将【计算属性的观察者】与属性 a 的【Dep实例对象】建立关联
             // 求值之后 观察者的 dirty 属性被设置为 false
+            // 因此 再次访问 compA 属性时无需再次求值
             watcher.evaluate()
+            // 求值结束 //
           }
-          // 这里的 Dep.target 的值是 渲染函数的观察者
+          // 这里的 Dep.target 的值是 渲染函数的观察者 (renderWatcher)
           if (Dep.target) {
+            // 执行后会把【计算属性观察者】的所有属性的Dep实例(保存在deps中)与【渲染函数的观察者】建立关联
             watcher.depend()
           }
+          // 返回计算属性的值
           return watcher.value
         }
       }
+      // 我们知道, 属性 a 是计算属性 compA 的响应式依赖, 即改变 a 的状态会导致计算属性 compA 重新计算求值
+      // 具体分析：
+      // 
     */
     const vm = new Vue({
       el: '#app',
