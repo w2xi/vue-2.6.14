@@ -33,16 +33,25 @@
           }
           // 这里的 Dep.target 的值是 渲染函数的观察者 (renderWatcher)
           if (Dep.target) {
-            // 执行后会把【计算属性观察者】的所有属性的Dep实例(保存在deps中)与【渲染函数的观察者】建立关联
+            // 执行后会把【计算属性观察者】的 deps属性(保存了计算属性所有的响应式属性的Dep) 与【渲染函数的观察者】建立关联
             watcher.depend()
           }
           // 返回计算属性的值
           return watcher.value
         }
       }
-      // 我们知道, 属性 a 是计算属性 compA 的响应式依赖, 即改变 a 的状态会导致计算属性 compA 重新计算求值
-      // 具体分析：
-      // 
+      
+      我们知道, 属性 a 是计算属性 compA 的响应式依赖, 即改变 a 的状态会导致计算属性 compA 重新计算求值.
+      让我们来分析下当改变[响应式属性a]的值时将会发生什么:
+      改变属性a的值,将会触发属性a所收集的所有依赖,这其中包括计算属性的观察者.
+      我们知道触发某个响应式属性的依赖实际上就是执行该属性所收集到的所有观察者的 update 方法,
+      所以这里会依次执行: 
+        1. 计算属性的观察者(computedWatcher)的 update 方法. 
+        2. 渲染函数的观察者(renderWatcher)的 update 方法.
+      
+      1. 执行 computedWatcher.update(): this.dirty = true.
+      2. 执行   renderWatcher.update(): 重新求值,即重新执行渲染函数, 
+          而渲染函数的执行又将触发计算属性的get拦截器函数...(这一过程已经前面分析过了), 最终完成视图的更新
     */
     const vm = new Vue({
       el: '#app',

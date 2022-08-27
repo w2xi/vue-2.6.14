@@ -206,6 +206,7 @@ export default class Watcher {
     if (this.lazy) {
       this.dirty = true
     } else if (this.sync) {
+      // 同步执行观察者
       this.run()
     } else {
       // 将观察者放到一个队列中等待所有突变完成之后统一执行更新

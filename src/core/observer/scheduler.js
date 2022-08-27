@@ -186,6 +186,7 @@ export function queueWatcher (watcher: Watcher) {
       waiting = true
 
       if (process.env.NODE_ENV !== 'production' && !config.async) {
+        // 非生产环境下,如果配置 Vue.config.async = false, 所有观察者都将会同步执行.
         flushSchedulerQueue()
         return
       }
