@@ -373,7 +373,7 @@ function normalizeInject (options: Object, vm: ?Component) {
     }
   } else if (isPlainObject(inject)) {
     // example:
-    // inject: { foo: 'foo', d: 'data' }
+    // inject: { foo: { default: 'bar' } }
     for (const key in inject) {
       const val = inject[key]
       normalized[key] = isPlainObject(val)
