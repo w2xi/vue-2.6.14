@@ -68,17 +68,22 @@ function initProps (vm: Component, propsOptions: Object) {
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
   const keys = vm.$options._propKeys = []
+  // 标识是否是根组件 (根组件的$parent属性不存在)
   const isRoot = !vm.$parent
   // root instance props should be converted
   if (!isRoot) {
-    // 非根实例 无需调用 obserse 函数观测
+    // 非根实例
+    // 一个开关, 设置 shouldObserve = false
+    // 在给 props 使用 defineReactive 定义响应式属性时, 将导致 obserse 函数为无效调用
     toggleObserving(false)
   }
   for (const key in propsOptions) {
     keys.push(key)
+    // 用来校验名字(key)给定的 prop 数据是否符合预期的类型，并返回相应 prop 的值(或默认值)
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
+      // 将 prop 的名字转为连字符加小写的形式, 即 someProp => some-prop
       const hyphenatedKey = hyphenate(key)
       // 非生产环境下 如果是 Vue 保留的属性, 打印警告信息
       if (isReservedAttribute(hyphenatedKey) ||
@@ -104,13 +109,16 @@ function initProps (vm: Component, propsOptions: Object) {
       })
     } else {
       // 定义响应式属性
+      // 注意: 由于 shouldObserve 为 false, 
+      //      将导致对 value (如果是对象或数组类型且value本身不是响应式的) 是浅观测的, 
+      //      当然如果 value 本身是响应式的, 那就另说
       defineReactive(props, key, value)
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
-      // 将对 vm.key 的访问(getter)或设置(setter)代理到 vm['_props'][key]
+      // 在 vm 上定义和key同名的属性并将对 vm.key 的访问代理到 vm['_props'][key]
       proxy(vm, `_props`, key)
     }
   }
@@ -299,7 +307,6 @@ function initMethods (vm: Component, methods: Object) {
   const props = vm.$options.props
   for (const key in methods) {
     if (process.env.NODE_ENV !== 'production') {
-      // methods 的每个属性值都应该是 函数
       if (typeof methods[key] !== 'function') {
         warn(
           `Method "${key}" has type "${typeof methods[key]}" in the component definition. ` +
@@ -307,7 +314,6 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
-      // 键名与 props 的属性冲突
       if (props && hasOwn(props, key)) {
         warn(
           `Method "${key}" has already been defined as a prop.`,

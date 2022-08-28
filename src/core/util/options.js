@@ -339,7 +339,7 @@ function normalizeProps (options: Object, vm: ?Component) {
     }
   } else if (isPlainObject(props)) {
     // example:
-    // props: { title: String } | { title: { type: String, ... } }
+    // props: { title: String | [String, Array] } | { title: { type: String, ... } }
     for (const key in props) {
       val = props[key]
       name = camelize(key)
