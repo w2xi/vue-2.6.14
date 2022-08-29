@@ -70,6 +70,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
+      // 渲染函数 render 的生成
       // 使用 compileToFunctions 函数 将模板(template)字符串编译成渲染函数(render)
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
