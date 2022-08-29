@@ -366,14 +366,20 @@ function normalizeInject (options: Object, vm: ?Component) {
   if (!inject) return
   const normalized = options.inject = {}
   if (Array.isArray(inject)) {
+    // 1. inject 选项是一个数组
     // example:
-    // inject: ['foo']
+    // inject: ['foo', 'bar']
+    // => 规范化后 
+    // vm.$options.inject: { foo: { from: 'foo' }, bar: { from: 'bar' } }
     for (let i = 0; i < inject.length; i++) {
       normalized[inject[i]] = { from: inject[i] }
     }
   } else if (isPlainObject(inject)) {
+    // 2. inject 选项是一个对象
     // example:
-    // inject: { foo: { default: 'bar' } }
+    // inject: { data1: 'd1', data2: { someProperty: 'someValue' } }
+    // => 规范化后 
+    // vm.$options.inject: { data1: { from: 'd1' }, data2: { from: 'data2', someProperty: 'someValue' } }
     for (const key in inject) {
       const val = inject[key]
       normalized[key] = isPlainObject(val)
