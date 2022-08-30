@@ -5,7 +5,9 @@ import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
 export function createCompilerCreator (baseCompile: Function): Function {
+  // createCompiler 函数作为 createCompilerCreator 函数的返回值
   return function createCompiler (baseOptions: CompilerOptions) {
+    // 定义 compile 函数
     function compile (
       template: string,
       options?: CompilerOptions
@@ -67,6 +69,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       return compiled
     }
 
+    // 返回 compile 和 compileToFunctions
     return {
       compile,
       compileToFunctions: createCompileToFunctionFn(compile)
