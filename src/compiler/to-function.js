@@ -34,6 +34,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     if (process.env.NODE_ENV !== 'production') {
       // detect possible CSP restriction
       try {
+        // 检测 new Function() 是否可用, 并在某些情况下给你一个有用的提示
         new Function('return 1')
       } catch (e) {
         if (e.toString().match(/unsafe-eval|CSP/)) {
@@ -48,11 +49,13 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    // 缓存字符串模板的编译结果，防止重复编译，提升性能
     // check cache
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
     if (cache[key]) {
+      // 如果命中缓存则直接返回编译结果
       return cache[key]
     }
 
@@ -61,8 +64,10 @@ export function createCompileToFunctionFn (compile: Function): Function {
 
     // check compilation errors/tips
     if (process.env.NODE_ENV !== 'production') {
+      // 如果编译过程中存在错误信息
       if (compiled.errors && compiled.errors.length) {
         if (options.outputSourceRange) {
+          // 打印编译过程中的错误信息
           compiled.errors.forEach(e => {
             warn(
               `Error compiling template:\n\n${e.msg}\n\n` +
@@ -78,6 +83,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
           )
         }
       }
+      // 打印编译过程中的提示信息
       if (compiled.tips && compiled.tips.length) {
         if (options.outputSourceRange) {
           compiled.tips.forEach(e => tip(e.msg, vm))
@@ -109,6 +115,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
       }
     }
 
+    // 将编译结果缓存并返回编译结果
     return (cache[key] = res)
   }
 }

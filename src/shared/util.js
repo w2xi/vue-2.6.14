@@ -226,6 +226,7 @@ export function toArray (list: any, start?: number): Array<any> {
 }
 
 /**
+ * 将 _from 的属性混合到 _to 对象中, 类似与 Object.assign 函数.
  * Mix properties into target object.
  */
 export function extend (to: Object, _from: ?Object): Object {
