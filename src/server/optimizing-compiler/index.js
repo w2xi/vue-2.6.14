@@ -5,6 +5,7 @@ import { generate } from './codegen'
 import { optimize } from './optimizer'
 import { createCompilerCreator } from 'compiler/create-compiler'
 
+// 创建服务端渲染环境的编译器
 export const createCompiler = createCompilerCreator(function baseCompile (
   template: string,
   options: CompilerOptions

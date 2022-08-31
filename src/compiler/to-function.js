@@ -9,6 +9,12 @@ type CompiledFunctionResult = {
   staticRenderFns: Array<Function>;
 };
 
+/**
+ * @description: 生成渲染函数
+ * @param {String} code   函数体字符串
+ * @param {Array} errors  收集错误信息
+ * @return {Funtion}
+ */
 function createFunction (code, errors) {
   try {
     return new Function(code)
@@ -17,6 +23,11 @@ function createFunction (code, errors) {
     return noop
   }
 }
+
+// 1、缓存编译结果，通过 createCompileToFunctionFn 函数内声明的 cache 常量实现。
+// 2、调用 compile 函数将模板字符串转成渲染函数字符串
+// 3、调用 createFunction 函数将渲染函数字符串转成真正的渲染函数
+// 4、打印编译错误，包括：模板字符串 -> 渲染函数字符串 以及 渲染函数字符串 -> 渲染函数 这两个阶段的错误
 
 export function createCompileToFunctionFn (compile: Function): Function {
   const cache = Object.create(null)
@@ -95,8 +106,13 @@ export function createCompileToFunctionFn (compile: Function): Function {
 
     // turn code into functions
     const res = {}
+    // 创建函数出错时的错误信息被 push 到这个数组里了
     const fnGenErrors = []
+    // compiled 除了包含 render 字符串外，还包含一个字符串数组 staticRenderFns
+    
+    // render 是最终生成的渲染函数
     res.render = createFunction(compiled.render, fnGenErrors)
+    // staticRenderFns 的主要作用是渲染优化
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
     })
@@ -107,6 +123,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production') {
       if ((!compiled.errors || !compiled.errors.length) && fnGenErrors.length) {
+        // 打印在生成渲染函数过程中的错误
         warn(
           `Failed to generate render function:\n\n` +
           fnGenErrors.map(({ err, code }) => `${err.toString()} in\n\n${code}\n`).join('\n'),
