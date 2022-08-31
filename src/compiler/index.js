@@ -15,16 +15,22 @@ export const createCompiler = createCompilerCreator(function baseCompile (
   template: string,
   options: CompilerOptions
 ): CompiledResult {
-  // 使用 parse 函数将模板解析为 AST
+  // 调用 parse 函数将字符串模板解析成抽象语法树(AST)
   const ast = parse(template.trim(), options)
   if (options.optimize !== false) {
+    // 调用 optimize 函数优化 ast
     optimize(ast, options)
   }
-  // 根据给定的AST生成目标平台的代码
+  // 调用 generate 函数将 ast 编译成渲染函数 (根据给定的AST生成目标平台的代码)
   const code = generate(ast, options)
   return {
     ast,
     render: code.render,
     staticRenderFns: code.staticRenderFns
   }
+  // 其最终返回了抽象语法树(ast)，渲染函数(render)，静态渲染函数(staticRenderFns)
+  // (
+  //   注意以上提到的渲染函数，都以字符串的形式存在, 
+  //   因为真正变成函数的过程是在 compileToFunctions 中使用 new Function() 来完成的
+  // )
 })
