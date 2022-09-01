@@ -22,7 +22,7 @@ const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 // 匹配开始标签的一部分
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
-// 捕获开始标签结束部分的斜杠：/
+// 捕获开始标签结束部分的 `>` 或 `/>`
 const startTagClose = /^\s*(\/?)>/
 // 匹配结束标签
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
