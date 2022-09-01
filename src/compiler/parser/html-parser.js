@@ -71,18 +71,24 @@ export function parseHTML (html, options) {
   const isUnaryTag = options.isUnaryTag || no
   // 检测一个标签是否是可以省略闭合标签的非一元标签
   const canBeLeftOpenTag = options.canBeLeftOpenTag || no
-  // 标识着当前字符流的读入位置
+  // 初始值为 0, 标识着当前字符流的读入位置
   let index = 0
   // last 存储剩余还未 parse 的 html 字符串
-  // lastTag 存储 stack 栈顶的元素
+  // lastTag 存储 stack 栈顶的元素, 即, 最近一次遇到的非一元标签的开始标签
   let last, lastTag
 
   // 开启一个 while 循环，循环结束的条件是 html 为空，即 html 被 parse 完毕
   while (html) {
     last = html
+    
+    // lastTag && isPlainTextElement(lastTag) 为 true 就会执行 else 分支, 否则执行 if 分支
+    // 含义: 最近一次遇到的非一元标签是纯文本标签(即：script,style,textarea 标签)
+    // 也就是说：当前我们正在处理的是纯文本标签里面的内容 (else 分支)
+
     // Make sure we're not in a plaintext content element like script/style
     if (!lastTag || !isPlainTextElement(lastTag)) {
       // 确保即将 parse 的内容不是在纯文本标签里 (script,style,textarea)
+
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
         // Comment:
@@ -108,7 +114,7 @@ export function parseHTML (html, options) {
           }
         }
 
-        // Doctype:
+        // Doctype: 
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
