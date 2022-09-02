@@ -22,7 +22,7 @@ const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
 // 匹配开始标签的一部分
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
-// 捕获开始标签结束部分的 `>` 或 `/>`
+// 匹配开始标签结束部分的 `>` 或 `/>`, 有一个捕获组
 const startTagClose = /^\s*(\/?)>/
 // 匹配结束标签
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
@@ -74,7 +74,7 @@ export function parseHTML (html, options) {
   // 初始值为 0, 标识着当前字符流的读入位置
   let index = 0
   // last 存储剩余还未 parse 的 html 字符串
-  // lastTag 存储 stack 栈顶的元素, 即, 最近一次遇到的非一元标签的开始标签
+  // lastTag 存储 stack 栈顶的元素, 即 最近一次遇到的非一元标签的开始标签
   let last, lastTag
 
   // 开启一个 while 循环，循环结束的条件是 html 为空，即 html 被 parse 完毕
@@ -96,6 +96,7 @@ export function parseHTML (html, options) {
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
+            // https://v2.cn.vuejs.org/v2/api/#comments
             if (options.shouldKeepComment) {
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
@@ -217,22 +218,32 @@ export function parseHTML (html, options) {
     const start = html.match(startTagOpen)
     if (start) {
       const match = {
-        tagName: start[1],
-        attrs: [],
+        tagName: start[1],  // 匹配到的标签名
+        attrs: [],          // 存储被匹配到的属性
         start: index
       }
       advance(start[0].length)
       let end, attr
+      // while 循环条件为 true 的条件:
+      // 1. 没有匹配到开始标签的结束部分
+      // 2. 匹配到了开始标签中的属性
       while (!(end = html.match(startTagClose)) && (attr = html.match(dynamicArgAttribute) || html.match(attribute))) {
         attr.start = index
         advance(attr[0].length)
         attr.end = index
         match.attrs.push(attr)
       }
+      // 如果匹配到了开始标签的 结束部分
       if (end) {
+        // end 存在则有两种情况:
+        // 1. html = <br />, end = ['/>', '/']
+        // 2. html = <div>,  end = ['>', '']
+        // end[1] 存在则说明是`一元标签` (开始标签的结束部分是否使用 '/')
         match.unarySlash = end[1]
         advance(end[0].length)
         match.end = index
+
+        // 只有当 end 存在时, 即确实解析到了一个开始标签的时候, parseStartTag 函数才会有返回值. 否则返回 undefined
         return match
       }
     }
@@ -250,13 +261,16 @@ export function parseHTML (html, options) {
         parseEndTag(tagName)
       }
     }
-
+    // 标识是否是一元标签
+    // 如果是自定义组件, 比如: <my-component />, unarySlash 的值为 true
     const unary = isUnaryTag(tagName) || !!unarySlash
 
     const l = match.attrs.length
     const attrs = new Array(l)
+    // for 循环的作用是：格式化 match.attrs 数组，并将格式化后的数据存储到常量 attrs 中
     for (let i = 0; i < l; i++) {
       const args = match.attrs[i]
+      // 属性值
       const value = args[3] || args[4] || args[5] || ''
       const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
         ? options.shouldDecodeNewlinesForHref
@@ -271,12 +285,15 @@ export function parseHTML (html, options) {
       }
     }
 
+    // 如果开始标签是非一元标签
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs, start: match.start, end: match.end })
+      // 将 lastTag 的值设置为该标签名
       lastTag = tagName
     }
 
     if (options.start) {
+      // 调用 parser 的钩子函数
       options.start(tagName, attrs, unary, match.start, match.end)
     }
   }
