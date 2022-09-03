@@ -9,12 +9,14 @@
 </head>
 <body>
   <div id="app">
-    <!-- comment -->
-    <span>parse HTML</span>
+    <article><section><div></section></article>
   </div>
   <script>
     const vm = new Vue({
       el: '#app',
+      // template: '<article><section><span></section></article>',
+      // template: '<article><section></div></section></article>', // </div> 会被忽略
+      template: '<div><article><section></section></article>',
       data: {
         msg: 'Hello Vue.js'
       },

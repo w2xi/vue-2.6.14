@@ -91,6 +91,9 @@ export function parseHTML (html, options) {
 
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
+        // html 的第一个字符是 `<`:
+        // 可能的情况: 注释, 条件注释, doctype, 开始标识, 结束标签
+
         // Comment:
         if (comment.test(html)) {
           const commentEnd = html.indexOf('-->')
@@ -144,6 +147,9 @@ export function parseHTML (html, options) {
 
       let text, rest, next
       if (textEnd >= 0) {
+        // 没有匹配到 注释标签, 条件注释, doctype, 开始标识, 结束标签 5种情况
+        // 比如字符串: `< 2`, 虽然以 `<` 开头, 但是什么标签都不是.
+
         rest = html.slice(textEnd)
         while (
           !endTag.test(rest) &&
@@ -254,9 +260,18 @@ export function parseHTML (html, options) {
     const unarySlash = match.unarySlash
 
     if (expectHTML) {
+      // 如果上一次遇到的开始标签是 p 标签, 并且当前正在解析的开始标签是 非`段落式内容模型`标签
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
+        // p 标签的特性是只允许包含 段落式内容
+        // example:
+        // <p><h2></h2></p> 
+        // => 调用 parseEndTag 函数闭合 p 标签
+        // <p></p><h2></h2></p>
+        // => 接着继续解析 html, 最后会被解析为
+        // <p></p><h2></h2><p></p>
         parseEndTag(lastTag)
       }
+      // 当前正在解析的标签是一个可以省略结束标签的标签，并且与上一次解析到的开始标签相同
       if (canBeLeftOpenTag(tagName) && lastTag === tagName) {
         parseEndTag(tagName)
       }
@@ -298,7 +313,21 @@ export function parseHTML (html, options) {
     }
   }
   // parse 结束标签
+  // parseEndTag 函数主要有三个作用:
+  // 1. 检测是否缺少闭合标签. 如果缺少结束标签, 则给用户一个提示: 标签 div 缺少结束标签
+  //    example: <article><section><div></section></article>
+  // 2. 处理 stack 栈中剩余未被处理的标签
+  //    example: <article><section></section></article><div>
+  //    解析完 html 后, 此时 stack 栈非空( [{ tag: 'div', ... }] )
+  // 3. 解析 </br> 与 </p> 标签, 与浏览器的行为相同
+  //     </br> => <br>; </p> => <p></p>
+
+  // parseEndTag 函数的使用方式有三种:
+  // 1. 处理普通的结束标签，此时 三个参数都传递.
+  // 2. 只传递第一个参数 (在 handleStartTag 函数中)
+  // 3. 不传递参数. 处理 stack 栈剩余未处理的标签.
   function parseEndTag (tagName, start, end) {
+    // pos 用于判断是否有元素缺少闭合标签
     let pos, lowerCasedTagName
     if (start == null) start = index
     if (end == null) end = index
@@ -306,19 +335,28 @@ export function parseHTML (html, options) {
     // Find the closest opened tag of the same type
     if (tagName) {
       lowerCasedTagName = tagName.toLowerCase()
+      // for 循环的作用: 寻找当前解析的结束标签所对应的开始标签在 stack 栈中的位置
       for (pos = stack.length - 1; pos >= 0; pos--) {
         if (stack[pos].lowerCasedTag === lowerCasedTagName) {
           break
         }
       }
+      // 当 tagName 没有在 stack 栈中找到对应的开始标签时, pos 为 -1
+      // 说明只写了结束标签而没写开始标签, 比如: </br> </p> ( </div> 会被忽略 )
     } else {
       // If no tag name is provided, clean shop
       pos = 0
     }
 
     if (pos >= 0) {
+      // example: <article><section><div></section></article>
+      // 当解析到 section 结束标签时:
+      // stack 中包含三个元素: article, section, div; pos = 1; stack.length = 3
+      // 循环遍历 stack 时, 会提示: 标签 div 未匹配到结束标签
+
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {
+        // 如果发现 stack 数组中存在索引大于 pos 的元素, 那么该元素一定是缺少闭合标签的
         if (process.env.NODE_ENV !== 'production' &&
           (i > pos || !tagName) &&
           options.warn
@@ -329,6 +367,7 @@ export function parseHTML (html, options) {
           )
         }
         if (options.end) {
+          // 将未闭合的标签闭合, 以保证解析结果的正确性
           options.end(stack[i].tag, start, end)
         }
       }
@@ -337,10 +376,12 @@ export function parseHTML (html, options) {
       stack.length = pos
       lastTag = pos && stack[pos - 1].tag
     } else if (lowerCasedTagName === 'br') {
+      // </br> => <br>
       if (options.start) {
         options.start(tagName, [], true, start, end)
       }
     } else if (lowerCasedTagName === 'p') {
+      // </p> => <p></p>
       if (options.start) {
         options.start(tagName, [], false, start, end)
       }
