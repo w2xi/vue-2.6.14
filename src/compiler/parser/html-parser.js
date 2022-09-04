@@ -54,7 +54,7 @@ const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#39|#10|#9);/g
 // 检测给定的标签是否是 <pre> 标签或者 <textarea> 标签
 // #5992
 const isIgnoreNewlineTag = makeMap('pre,textarea', true)
-// 检测是否应该忽略元素内容的第一个换行符
+// 检测是否应该忽略元素 pre 和 textarea 内容的第一个换行符
 const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
 
 // 解码 html 实体
@@ -82,7 +82,7 @@ export function parseHTML (html, options) {
     last = html
     
     // lastTag && isPlainTextElement(lastTag) 为 true 就会执行 else 分支, 否则执行 if 分支
-    // 含义: 最近一次遇到的非一元标签是纯文本标签(即：script,style,textarea 标签)
+    // 含义: 最近一次(上一次)遇到的非一元标签是纯文本标签(即：script,style,textarea 标签)
     // 也就是说：当前我们正在处理的是纯文本标签里面的内容 (else 分支)
 
     // Make sure we're not in a plaintext content element like script/style
@@ -91,7 +91,8 @@ export function parseHTML (html, options) {
 
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
-        // html 的第一个字符是 `<`:
+        // 用于处理标签
+        // 处理 html 的第一个字符是 `<`:
         // 可能的情况: 注释, 条件注释, doctype, 开始标识, 结束标签
 
         // Comment:
@@ -147,10 +148,16 @@ export function parseHTML (html, options) {
 
       let text, rest, next
       if (textEnd >= 0) {
-        // 没有匹配到 注释标签, 条件注释, doctype, 开始标识, 结束标签 5种情况
-        // 比如字符串: `< 2`, 虽然以 `<` 开头, 但是什么标签都不是.
+        // 用于处理文本内容
+        // 处理 html 的第一个字符是: 
+        // (1) `<`, 但是没有成功匹配标签 (注释标签, 条件注释, doctype, 开始标识, 结束标签 5种情况)
+        //      比如字符串: `< 2`, 虽然以 `<` 开头, 但是什么标签都不是.
+        // (2) 或第一个字符不是 `<` 的字符串.
+        //      比如字符串: '0<1<2', a<div>b</div> (处理 a, b 时会进入该 if 条件)
 
         rest = html.slice(textEnd)
+        // while 循环条件为 true:
+        // 不是结束标签 && 不是开始标识 && 不是注释标签 && 不是条件注释
         while (
           !endTag.test(rest) &&
           !startTagOpen.test(rest) &&
@@ -167,6 +174,7 @@ export function parseHTML (html, options) {
       }
 
       if (textEnd < 0) {
+        // 整个 html 字符串作为文本处理
         text = html
       }
 
@@ -175,10 +183,12 @@ export function parseHTML (html, options) {
       }
 
       if (options.chars && text) {
+        // 调用 parser 的钩子函数
         options.chars(text, index - text.length, index)
       }
     } else {
       // 即将 parse 的内容是在纯文本标签里 (script,style,textarea)
+      // example: html = '<textarea>123</textarea>'
       let endTagLength = 0
       const stackedTag = lastTag.toLowerCase()
       const reStackedTag = reCache[stackedTag] || (reCache[stackedTag] = new RegExp('([\\s\\S]*?)(</' + stackedTag + '[^>]*>)', 'i'))
@@ -199,6 +209,7 @@ export function parseHTML (html, options) {
       })
       index += html.length - rest.length
       html = rest
+      // 解析纯文本标签的结束标签
       parseEndTag(stackedTag, index - endTagLength, index)
     }
 
