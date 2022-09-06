@@ -20,21 +20,30 @@ import {
   pluckModuleFunction,
   getAndRemoveAttrByRegex
 } from '../helpers'
-
+// 检测标签属性名是否是监听事件的指令
 export const onRE = /^@|^v-on:/
+// 检测标签属性名是否是指令
 export const dirRE = process.env.VBIND_PROP_SHORTHAND
   ? /^v-|^@|^:|^\.|^#/
   : /^v-|^@|^:|^#/
+// 匹配 v-for 属性的值
 export const forAliasRE = /([\s\S]*?)\s+(?:in|of)\s+([\s\S]*)/
+// 匹配 forAliasRE 第一个捕获组所捕获到的字符串
 export const forIteratorRE = /,([^,\}\]]*)(?:,([^,\}\]]*))?$/
+// 匹配 要么以字符 ( 开头，要么以字符 ) 结尾的字符串，或者两者都满足
+// 在使用 forIteratorRE 正则之前，需要使用 stripParensRE 正则去掉字符串 '(item, index)' 中的左右括号
+// '(item, index)'.replace(stripParensRE, '')
 const stripParensRE = /^\(|\)$/g
 const dynamicArgRE = /^\[.*\]$/
 
+// 匹配指令中的参数
 const argRE = /:(.*)$/
+// 检测一个标签的属性是否是绑定(v-bind)
 export const bindRE = /^:|^\.|^v-bind:/
 const propBindRE = /^\./
+// 匹配修饰符
 const modifierRE = /\.[^.\]]+(?=[^\]]*$)/g
-
+// 检测标签属性名是否是 v-slot (缩写: #) 指令
 const slotRE = /^v-slot(:|$)|^#/
 
 const lineBreakRE = /[\r\n]/
@@ -42,6 +51,7 @@ const whitespaceRE = /[ \f\t\r\n]+/g
 
 const invalidAttributeRE = /[\s"'<>\/=]/
 
+// HTML 字符实体的解码 (在后面将被用于对纯文本的解码)
 const decodeHTMLCached = cached(he.decode)
 
 export const emptySlotScopeToken = `_empty_`
@@ -87,6 +97,7 @@ export function parse (
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
   const isReservedTag = options.isReservedTag || no
+  // 检测是否是一个 Vue 组件
   maybeComponent = (el: ASTElement) => !!(
     el.component ||
     el.attrsMap[':is'] ||
@@ -99,15 +110,21 @@ export function parse (
 
   delimiters = options.delimiters
 
+  // 用来修正当前正在解析元素的父级
   const stack = []
+  // 编译 html 字符串时是否放弃标签之间的空格, 如果为 true 则代表放弃 ?
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
   let root
   let currentParent
+  // 标识当前解析的标签是否在拥有 v-pre 的标签之内
   let inVPre = false
+  // 标识当前正在解析的标签是否在 <pre></pre> 标签之内
   let inPre = false
+  // 用于接下来定义的 warnOnce 函数
   let warned = false
-
+  
+  // 打印一次警告信息
   function warnOnce (msg, range) {
     if (!warned) {
       warned = true
@@ -303,6 +320,8 @@ export function parse (
     },
 
     end (tag, start, end) {
+      // 当遇到一个非一元标签的结束标签时, 都会回退 currentParent 变量的值为之前的值
+      // 这样我们就修正了当前正在解析的元素的父级元素
       const element = stack[stack.length - 1]
       // pop stack
       stack.length -= 1

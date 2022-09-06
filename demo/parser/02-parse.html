@@ -14,6 +14,13 @@
       el: '#app',
       template: '<div></div>',
     });
+    const html = '<div v-for="obj of list" class="box"></div>'
+    // parseHTML(html, {
+    //   start(tag, attrs) {
+    //     console.log(tag)    // 'div'
+    //     console.log(attrs)  // [{name: 'v-for', value: 'obj of list'}, {name: 'class', value: 'box'}]
+    //   },
+    // })
   </script>
 </body>
 </html>

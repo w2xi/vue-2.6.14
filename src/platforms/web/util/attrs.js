@@ -8,7 +8,7 @@ export const isReservedAttr = makeMap('style,class')
 
 // attributes that should be using props for binding
 const acceptValue = makeMap('input,textarea,option,select,progress')
-// 用来检测一个属性在标签中是否要使用 props 进行绑定
+// 用来检测一个属性在标签中是否要使用元素对象原生的 prop 进行绑定 (注意：这里的 prop 指的是元素对象的属性，而非 Vue 中的 props 概念)
 export const mustUseProp = (tag: string, type: ?string, attr: string): boolean => {
   return (
     (attr === 'value' && acceptValue(tag)) && type !== 'button' ||
