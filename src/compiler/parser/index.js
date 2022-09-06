@@ -132,6 +132,7 @@ export function parse (
     }
   }
 
+  // 每当遇到一个标签的结束标签时，或遇到一元标签时都会调用该方法“闭合”标签
   function closeElement (element) {
     trimEndingWhitespace(element)
     if (!inVPre && !element.processed) {
