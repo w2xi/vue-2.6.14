@@ -140,8 +140,12 @@ export function parse (
     }
     // tree management
     if (!stack.length && element !== root) {
+      // 上面 if 语句条件成立 说明存在多个【根元素】
+
       // allow root elements with v-if, v-else-if and v-else
       if (root.if && (element.elseif || element.else)) {
+        // 上面 if 语句条件成立就能够保证所有根元素都是由 v-if、v-else-if、v-else 等指令控制的
+
         if (process.env.NODE_ENV !== 'production') {
           checkRootConstraints(element)
         }
@@ -193,6 +197,7 @@ export function parse (
     }
   }
 
+  // 移除结束标签末尾的空格
   function trimEndingWhitespace (el) {
     // remove trailing whitespace node
     if (!inPre) {
@@ -207,7 +212,9 @@ export function parse (
     }
   }
 
+  // 检测模板根元素是否符合约束条件 (模板必须有且仅有一个被渲染的根元素)
   function checkRootConstraints (el) {
+    // 如果根节点标签是 `slot` 或 `template`, 会打印警告信息
     if (el.tag === 'slot' || el.tag === 'template') {
       warnOnce(
         `Cannot use <${el.tag}> as component root element because it may ` +
@@ -215,6 +222,7 @@ export function parse (
         { start: el.start }
       )
     }
+    // 如果根节点标签有 `v-for` 属性, 会打印警告信息
     if (el.attrsMap.hasOwnProperty('v-for')) {
       warnOnce(
         'Cannot use v-for on stateful component root element because ' +
@@ -244,6 +252,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 为当前元素(开始标签)创建描述对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -258,6 +267,7 @@ export function parse (
             return cumulated
           }, {})
         }
+        // 验证当前元素的属性名是否合法
         attrs.forEach(attr => {
           if (invalidAttributeRE.test(attr.name)) {
             warn(
@@ -272,6 +282,7 @@ export function parse (
         })
       }
 
+      // 如果当前元素是被禁止的, 并且是在非服务端渲染的情况下
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -284,8 +295,13 @@ export function parse (
 
       // apply pre-transforms
       for (let i = 0; i < preTransforms.length; i++) {
+        // 对当前元素(仅对input标签)描述对象做进一步处理
         element = preTransforms[i](element, options) || element
       }
+
+      // 接下来的代码大量调用 process* 系列的函数, 
+      // 其实就是在对当前元素描述对象做额外的处理, 使得该元素描述对象能更好的描述一个标签. 
+      // 简单点说就是在元素描述对象上添加各种各样的具有标识作用的属性
 
       if (!inVPre) {
         processPre(element)
@@ -308,14 +324,18 @@ export function parse (
       if (!root) {
         root = element
         if (process.env.NODE_ENV !== 'production') {
+          // 检查根元素是否符合要求
           checkRootConstraints(root)
         }
       }
 
       if (!unary) {
+        // 每当遇到一个非一元标签都会将该元素的描述对象添加到 stack 数组,
+        // 并且 currentParent 始终存储的是 stack 栈顶的元素, 即当前解析元素的父级
         currentParent = element
         stack.push(element)
       } else {
+        // 如果当前元素是`一元标签`, 直接闭合该元素
         closeElement(element)
       }
     },
