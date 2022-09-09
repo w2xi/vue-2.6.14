@@ -176,7 +176,7 @@ export function getBindingAttr (
   }
 }
 
-// 获取给定元素的某个属性的值并从元素的 attrsList(数组)上移除该属性(name)
+// 获取给定元素的某个属性的值, 并将 属性名为 name 的值所在的数组元素 从 attrsList(数组) 中移除
 
 // note: this only removes the attr from the Array (attrsList) so that it
 // doesn't get processed by processAttrs.

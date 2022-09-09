@@ -315,13 +315,20 @@ export function parse (
           inVPre = true
         }
       }
-      // 检查是否是 pre 标签
+
+      // 检查当前元素标签是否是 pre 标签
       if (platformIsPreTag(element.tag)) {
         inPre = true
       }
+
+      // 我们知道使用 v-pre 指令的标签及其子标签的解析行为是不一致的,
+      // 编译器会跳过使用了 v-pre 指令元素及其子元素的编译工作
       if (inVPre) {
         processRawAttrs(element)
       } else if (!element.processed) {
+        // 在 preTransforms 前置处理函数中可以看到, 如果当前元素是 input 元素才可能标识 processed 属性
+        // 它标识着当前元素是否已经被解析过了
+
         // structural directives
         processFor(element)
         processIf(element)
@@ -474,6 +481,12 @@ function processRawAttrs (el) {
       }
     }
   } else if (!el.pre) {
+    // 进入这里, 这说明该元素一定是使用了 v-pre 指令的标签的子标签 且 没有任何属性
+    // example:
+    `<div v-pre>
+      <span></span>
+    </div>`
+    // 标识该元素是纯的
     // non root node in pre blocks with no attributes
     el.plain = true
   }
@@ -564,6 +577,12 @@ type ForParseResult = {
 export function parseFor (exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
+  // 1. v-for="item of list"
+  // res = { for: 'list', alias: 'item' }
+  // 2. v-for="(item, index) of list"
+  // res = { for: 'list', alias: 'item', iterator1: 'index' }
+  // 3. v-for="(value, key, index) in obj"
+  // res = { for: 'obj', alias: 'value', iterator1: 'key', iterator2: 'index' }
   const res = {}
   res.for = inMatch[2].trim()
   const alias = inMatch[1].trim().replace(stripParensRE, '')
