@@ -117,7 +117,7 @@ export function parse (
   const whitespaceOption = options.whitespace
   let root
   let currentParent
-  // 标识当前解析的标签是否在拥有 v-pre 的标签之内
+  // 标识当前解析的标签是否在拥有 v-pre 指令的标签之内
   let inVPre = false
   // 标识当前正在解析的标签是否在 <pre></pre> 标签之内
   let inPre = false
@@ -164,6 +164,8 @@ export function parse (
     }
     if (currentParent && !element.forbidden) {
       if (element.elseif || element.else) {
+        // 当一个元素使用了 v-else-if 或 v-else 指令时，它们是不会作为父级元素子节点(children数组中)的
+        // 而是会被添加到相符的使用了 v-if 指令的元素描述对象的 ifConditions 数组中
         processIfConditions(element, currentParent)
       } else {
         if (element.slotScope) {
@@ -173,8 +175,11 @@ export function parse (
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         }
+        // 把当前元素描述对象添加到父级元素描述对象(currentParent)的 children 数组中
         currentParent.children.push(element)
+        // 将当前元素对象的 parent 属性指向父级元素对象
         element.parent = currentParent
+        // 这样就建立了元素描述对象间的父子级关系
       }
     }
 
@@ -295,6 +300,7 @@ export function parse (
 
       // apply pre-transforms
       for (let i = 0; i < preTransforms.length; i++) {
+        // 调用前置处理函数
         // 对当前元素(仅对input标签)描述对象做进一步处理
         element = preTransforms[i](element, options) || element
       }
@@ -309,6 +315,7 @@ export function parse (
           inVPre = true
         }
       }
+      // 检查是否是 pre 标签
       if (platformIsPreTag(element.tag)) {
         inPre = true
       }
@@ -322,6 +329,7 @@ export function parse (
       }
 
       if (!root) {
+        // 根元素
         root = element
         if (process.env.NODE_ENV !== 'production') {
           // 检查根元素是否符合要求
@@ -592,13 +600,19 @@ function processIf (el) {
 }
 
 function processIfConditions (el, parent) {
+  // 寻找当前元素的前一个元素节点
   const prev = findPrevElement(parent.children)
   if (prev && prev.if) {
+    // 我们知道对于使用了 v-else-if 或 v-else 指令的元素来讲,
+    // 他们的前一个元素必然需要使用相符的 v-if 指令才行
+    // 如果前一个元素确实使用了 v-if 指令,
+    // 那么则会调用 addIfCondition 函数将当前元素描述对象添加到前一个元素的 ifConditions 数组中
     addIfCondition(prev, {
       exp: el.elseif,
       block: el
     })
   } else if (process.env.NODE_ENV !== 'production') {
+    // 打印警告信息提示开发者没有相符的使用了 v-if 指令的元素
     warn(
       `v-${el.elseif ? ('else-if="' + el.elseif + '"') : 'else'} ` +
       `used on element <${el.tag}> without corresponding v-if.`,
@@ -607,12 +621,23 @@ function processIfConditions (el, parent) {
   }
 }
 
+// findPrevElement 函数只用在了 processIfConditions 函数中,
+// 它的作用就是当解析器遇到一个带有 v-else-if 或 v-else 指令的元素时，
+// 找到该元素的前一个元素节点 (或者说 父级元素描述对象的最后一个元素节点)
 function findPrevElement (children: Array<any>): ASTElement | void {
   let i = children.length
   while (i--) {
     if (children[i].type === 1) {
       return children[i]
     } else {
+      `<div>
+        <div v-if="a"></div>
+        aaaaa
+        <p v-else-if="b"></p>
+        bbbbb
+        <span v-else="c"></span>
+      </div>`
+      // 如上代码中的文本 aaaaa 和 bbbbb 都将被忽略
       if (process.env.NODE_ENV !== 'production' && children[i].text !== ' ') {
         warn(
           `text "${children[i].text.trim()}" between v-if and v-else(-if) ` +
