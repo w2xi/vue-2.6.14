@@ -198,6 +198,7 @@ export function parse (
     }
     // apply post-transforms
     for (let i = 0; i < postTransforms.length; i++) {
+      // 调用后置处理函数
       postTransforms[i](element, options)
     }
   }
@@ -511,13 +512,18 @@ export function processElement (
   processSlotOutlet(element)
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
+    // 调用中置处理函数
     element = transforms[i](element, options) || element
   }
   processAttrs(element)
   return element
 }
 
+// 1. key 属性不能被应用到 <template> 标签
+// 2. 使用了 key 属性的标签，其元素描述对象的 el.key 属性保存着 key 属性的值
+
 function processKey (el) {
+  // 获取绑定属性的属性值
   const exp = getBindingAttr(el, 'key')
   if (exp) {
     if (process.env.NODE_ENV !== 'production') {
@@ -574,15 +580,16 @@ type ForParseResult = {
   iterator2?: string;
 };
 
+// 1. v-for="item of list"
+// res = { for: 'list', alias: 'item' }
+// 2. v-for="(item, index) of list"
+// res = { for: 'list', alias: 'item', iterator1: 'index' }
+// 3. v-for="(value, key, index) in obj"
+// res = { for: 'obj', alias: 'value', iterator1: 'key', iterator2: 'index' }
+
 export function parseFor (exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
-  // 1. v-for="item of list"
-  // res = { for: 'list', alias: 'item' }
-  // 2. v-for="(item, index) of list"
-  // res = { for: 'list', alias: 'item', iterator1: 'index' }
-  // 3. v-for="(value, key, index) in obj"
-  // res = { for: 'obj', alias: 'value', iterator1: 'key', iterator2: 'index' }
   const res = {}
   res.for = inMatch[2].trim()
   const alias = inMatch[1].trim().replace(stripParensRE, '')
@@ -853,6 +860,7 @@ function processAttrs (el) {
     if (dirRE.test(name)) {
       // mark element as dynamic
       el.hasBindings = true
+      // 解析指令的修饰符
       // modifiers
       modifiers = parseModifiers(name.replace(dirRE, ''))
       // support .foo shorthand syntax for the .prop modifier
@@ -860,11 +868,14 @@ function processAttrs (el) {
         (modifiers || (modifiers = {})).prop = true
         name = `.` + name.slice(1).replace(modifierRE, '')
       } else if (modifiers) {
+        // 将修饰符从指令字符串中移除 ( @click.native.prevent => @click )
         name = name.replace(modifierRE, '')
       }
       if (bindRE.test(name)) { // v-bind
         name = name.replace(bindRE, '')
         value = parseFilters(value)
+        // 是否是动态绑定
+        // example: :[a]="b"
         isDynamic = dynamicArgRE.test(name)
         if (isDynamic) {
           name = name.slice(1, -1)
@@ -882,6 +893,7 @@ function processAttrs (el) {
             name = camelize(name)
             if (name === 'innerHtml') name = 'innerHTML'
           }
+          // .camel 将绑定的属性驼峰化
           if (modifiers.camel && !isDynamic) {
             name = camelize(name)
           }
