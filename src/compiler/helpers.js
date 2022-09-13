@@ -66,6 +66,8 @@ function prependModifierMarker (symbol: string, name: string, dynamic?: boolean)
     : symbol + name // mark the event as captured
 }
 
+// addHandler 函数的作用实际上就是将事件名称与该事件的侦听函数
+// 添加到元素描述对象的 el.events 属性或 el.nativeEvents 属性中
 export function addHandler (
   el: ASTElement,
   name: string,

@@ -872,6 +872,7 @@ function processAttrs (el) {
         name = name.replace(modifierRE, '')
       }
       if (bindRE.test(name)) { // v-bind
+        // 移除字符串中的 `v-bind:` or `:`
         name = name.replace(bindRE, '')
         value = parseFilters(value)
         // 是否是动态绑定
@@ -888,18 +889,25 @@ function processAttrs (el) {
             `The value for a v-bind expression cannot be empty. Found in "v-bind:${name}"`
           )
         }
+        
+        // 处理修饰符
+        // v-bind 属性修饰符: .prop .camel .sync
+        // .camel: 将绑定的属性驼峰化
+        // .sync:  简化子组件需要修改 prop 值的逻辑
+
         if (modifiers) {
           if (modifiers.prop && !isDynamic) {
             name = camelize(name)
             if (name === 'innerHtml') name = 'innerHTML'
           }
-          // .camel 将绑定的属性驼峰化
           if (modifiers.camel && !isDynamic) {
             name = camelize(name)
           }
           if (modifiers.sync) {
+            // 事件的回调函数 (代码字符串)
             syncGen = genAssignmentCode(value, `$event`)
             if (!isDynamic) {
+              // 在当前元素描述对象上添加事件侦听器
               addHandler(
                 el,
                 `update:${camelize(name)}`,
@@ -909,6 +917,12 @@ function processAttrs (el) {
                 warn,
                 list[i]
               )
+              // some-prop => someProp  ( camelize  )
+              // someProp  => some-prop ( hyphenate )
+              // 由此可见 Vue 支持不同格式的属性:
+              // 0. :prop.sync
+              // 1. :some-prop.sync ( kebab-case )
+              // 2. :someProp.sync  ( camel case )
               if (hyphenate(name) !== camelize(name)) {
                 addHandler(
                   el,
