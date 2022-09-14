@@ -104,8 +104,11 @@ export function parse (
     el.attrsMap['v-bind:is'] ||
     !(el.attrsMap.is ? isReservedTag(el.attrsMap.is) : isReservedTag(el.tag))
   )
+  // 中置处理
   transforms = pluckModuleFunction(options.modules, 'transformNode')
+  // 前置处理
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
+  // 后置处理
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
   delimiters = options.delimiters
@@ -513,6 +516,7 @@ export function processElement (
   processComponent(element)
   for (let i = 0; i < transforms.length; i++) {
     // 调用中置处理函数
+    // 处理了 style 和 class 属性
     element = transforms[i](element, options) || element
   }
   processAttrs(element)
@@ -964,7 +968,14 @@ function processAttrs (el) {
         }
         addHandler(el, name, value, modifiers, false, warn, list[i], isDynamic)
       } else { // normal directives
+        /**
+          解析 `自定义指令` 和 5个Vue内置的 `v-text`, `v-html`, `v-show`, `v-cloak`, `v-model`
+          example: <span v-custom:args.modify="myMethod"></span>
+        */
+        
+        // 去掉属性名称中的 'v-' 或 ':' 或 '@' 等字符
         name = name.replace(dirRE, '')
+        // 解析自定义指令的参数, example: custom:args
         // parse arg
         const argMatch = name.match(argRE)
         let arg = argMatch && argMatch[1]
@@ -982,8 +993,12 @@ function processAttrs (el) {
         }
       }
     } else {
+      // 处理非指令属性
+      // example: <div id="box" width="100px"></div> (id, width 属性)
+
       // literal attribute
       if (process.env.NODE_ENV !== 'production') {
+        // example: <div id="{{ isTrue ? 'a' : 'b' }}"></div>
         const res = parseText(value, delimiters)
         if (res) {
           warn(
@@ -999,8 +1014,9 @@ function processAttrs (el) {
       // #6887 firefox doesn't update muted state if set via attribute
       // even immediately after element creation
       if (!el.component &&
-          name === 'muted' &&
-          platformMustUseProp(el.tag, el.attrsMap.type, name)) {
+        name === 'muted' &&
+        platformMustUseProp(el.tag, el.attrsMap.type, name)
+      ) {
         addProp(el, name, 'true', list[i])
       }
     }
@@ -1072,7 +1088,15 @@ function guardIESVGBug (attrs) {
   return res
 }
 
+// checkForAliasModel 函数的作用就是从使用了 v-model 指令的标签开始,
+// 逐层向上遍历父级标签的元素描述对象, 直到根元素为止, 当满足一定条件时给开发者合适的提醒
 function checkForAliasModel (el, value) {
+  `
+  const list = [1, 2, 3]
+  <div v-for="item of list">
+    <input v-model="item" />
+  </div>
+  `
   let _el = el
   while (_el) {
     if (_el.for && _el.alias === value) {

@@ -20,11 +20,15 @@ export function pluckModuleFunction<F: Function> (
     : []
 }
 
+// 元素描述对象的 el.props 数组中所存储的任何属性都会在由虚拟DOM创建真实DOM的过程中
+// 直接使用真实DOM对象添加
 export function addProp (el: ASTElement, name: string, value: string, range?: Range, dynamic?: boolean) {
   (el.props || (el.props = [])).push(rangeSetItem({ name, value, dynamic }, range))
   el.plain = false
 }
 
+// 元素描述对象的 el.attrs 数组中所存储的任何属性都会在由虚拟DOM创建真实DOM的过程中
+// 使用 setAttribute 方法将属性添加到真实DOM元素上
 export function addAttr (el: ASTElement, name: string, value: any, range?: Range, dynamic?: boolean) {
   const attrs = dynamic
     ? (el.dynamicAttrs || (el.dynamicAttrs = []))
@@ -39,6 +43,7 @@ export function addRawAttr (el: ASTElement, name: string, value: any, range?: Ra
   el.attrsList.push(rangeSetItem({ name, value }, range))
 }
 
+// addDirective 函数的作用是用来在元素描述对象上添加 el.directives 属性的
 export function addDirective (
   el: ASTElement,
   name: string,
@@ -92,6 +97,8 @@ export function addHandler (
     )
   }
 
+  // 以下代码用来规范化'右击'事件(contextmenu)和点击鼠标中间按钮(滚轮)的事件(mouseup)
+
   // normalize click.right and click.middle since they don't actually fire
   // this is technically browser-specific, but at least for now browsers are
   // the only target envs that have right/middle clicks.
@@ -134,6 +141,7 @@ export function addHandler (
   }
 
   const newHandler: any = rangeSetItem({ value: value.trim(), dynamic }, range)
+  // 如果存在修饰符
   if (modifiers !== emptyObject) {
     newHandler.modifiers = modifiers
   }
