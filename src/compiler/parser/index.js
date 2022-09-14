@@ -211,6 +211,7 @@ export function parse (
     // remove trailing whitespace node
     if (!inPre) {
       let lastNode
+      // type: 3, 表示普通文本节点或注释节点
       while (
         (lastNode = el.children[el.children.length - 1]) &&
         lastNode.type === 3 &&
@@ -995,6 +996,7 @@ function processAttrs (el) {
     } else {
       // 处理非指令属性
       // example: <div id="box" width="100px"></div> (id, width 属性)
+      // 注意: 在中置处理函数中, 已经对 style class 做了预处理
 
       // literal attribute
       if (process.env.NODE_ENV !== 'production') {

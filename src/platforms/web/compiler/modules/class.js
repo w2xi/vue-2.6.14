@@ -7,10 +7,18 @@ import {
   baseWarn
 } from 'compiler/helpers'
 
+// <div class="static-class" :class="['dynamical', 'activeClass']"></div>
+// el.staticClass = JSON.stringify('static-class')
+// el.classBinding = "['dynamical', 'activeClass']"
+
 function transformNode (el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn
+  // 获取静态非绑定class属性
   const staticClass = getAndRemoveAttr(el, 'class')
   if (process.env.NODE_ENV !== 'production' && staticClass) {
+    // 例如:      <div class="{{ val }}"></div>
+    // 应该替换为  <div :class="val"></div>
+
     const res = parseText(staticClass, options.delimiters)
     if (res) {
       warn(
@@ -25,6 +33,7 @@ function transformNode (el: ASTElement, options: CompilerOptions) {
   if (staticClass) {
     el.staticClass = JSON.stringify(staticClass.replace(/\s+/g, ' ').trim())
   }
+  // 获取动态绑定class属性
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */)
   if (classBinding) {
     el.classBinding = classBinding

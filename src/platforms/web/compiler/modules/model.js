@@ -24,6 +24,9 @@ import {
 } from 'compiler/parser/index'
 
 // preTransformNode 函数要预处理的是使用了 v-model 属性并且使用了绑定的 type 属性的 input 标签
+// example: <input v-model="val" :type="inputType" />
+// 其作用就是将一个拥有绑定类型和 v-model 指令的 input 标签扩展为三个 input 标签，
+// 这个三个 input 标签分别是复选按钮(checkbox)、单选按钮(radio)和其他 input 标签
 function preTransformNode (el: ASTElement, options: CompilerOptions) {
   if (el.tag === 'input') {
     const map = el.attrsMap
@@ -55,6 +58,7 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
       processFor(branch0)
       addRawAttr(branch0, 'type', 'checkbox')
       processElement(branch0, options)
+      // 标识着当前元素描述对象已经被处理过了, 这么做的目的是为了避免重复的解析
       branch0.processed = true // prevent it from double-processed
       branch0.if = `(${typeBinding})==='checkbox'` + ifConditionExtra
       addIfCondition(branch0, {
@@ -63,6 +67,8 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
       })
       // 2. add radio else-if condition
       const branch1 = cloneASTElement(el)
+      // 将克隆出来的元素描述对象中的 v-for 属性移除掉，因为在复选按钮中已经使用 processFor 处理过了 v-for 指令
+      // 由于它们本是互斥的，其本质上等价于是同一个元素，只是根据不同的条件渲染不同的标签罢了，所以 v-for 指令处理一次就够了
       getAndRemoveAttr(branch1, 'v-for', true)
       addRawAttr(branch1, 'type', 'radio')
       processElement(branch1, options)
@@ -79,6 +85,10 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
         exp: ifCondition,
         block: branch2
       })
+
+      // example:
+      // <div v-if="num === 1"></div>
+      // <input v-model="val" :type="inputType" v-else />
 
       if (hasElse) {
         branch0.else = true
