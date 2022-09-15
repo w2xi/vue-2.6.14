@@ -8,6 +8,11 @@ import {
   baseWarn
 } from 'compiler/helpers'
 
+// 处理 style 属性
+// <div style="color: red; font-weight: 20px" :style="{ color: 'red' }"></div>
+// el.staticStyle = JSON.stringify({ color: 'red', 'font-weight': '20px' })
+// el.styleBinding = "{ color: 'red' }" ( 或者是 data 数据 )
+
 function transformNode (el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn
   const staticStyle = getAndRemoveAttr(el, 'style')

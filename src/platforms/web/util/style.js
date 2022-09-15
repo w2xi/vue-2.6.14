@@ -2,6 +2,10 @@
 
 import { cached, extend, toObject } from 'shared/util'
 
+// 解析非绑定 style 属性的值
+// style="color: red; font-weight: 20px"
+// =>
+// { color: 'red', 'font-weight': '20px' }
 export const parseStyleText = cached(function (cssText) {
   const res = {}
   const listDelimiter = /;(?![^(]*\))/g

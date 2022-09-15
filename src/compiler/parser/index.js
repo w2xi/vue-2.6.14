@@ -376,18 +376,29 @@ export function parse (
     chars (text: string, start: number, end: number) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
+          // example: <template>1</template> (template 为抽象组件)
+          // text 和 template 都为 '1'
           if (text === template) {
             warnOnce(
               'Component template requires a root element, rather than just text.',
               { start }
             )
           } else if ((text = text.trim())) {
+            // example:
+            `
+            <template>
+              <div>content</div>
+              123
+            </template>
+            `
+            // 当解析到文本 '123', 即 text = '123' 时, 该文本无外部根节点
             warnOnce(
               `text "${text}" outside root element will be ignored.`,
               { start }
             )
           }
         }
+        // 无根节点, 直接返回
         return
       }
       // IE textarea placeholder bug

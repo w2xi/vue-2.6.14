@@ -7,17 +7,17 @@ import {
   baseWarn
 } from 'compiler/helpers'
 
-// <div class="static-class" :class="['dynamical', 'activeClass']"></div>
+// <div class="static-class" :class="{ 'active': isActive }"></div>
 // el.staticClass = JSON.stringify('static-class')
-// el.classBinding = "['dynamical', 'activeClass']"
+// el.classBinding = "{ 'active': isActive }" ( 或者是 data 数据 )
 
 function transformNode (el: ASTElement, options: CompilerOptions) {
   const warn = options.warn || baseWarn
-  // 获取静态非绑定class属性
+  // 获取非绑定 class 属性的值
   const staticClass = getAndRemoveAttr(el, 'class')
   if (process.env.NODE_ENV !== 'production' && staticClass) {
-    // 例如:      <div class="{{ val }}"></div>
-    // 应该替换为  <div :class="val"></div>
+    // 例如:       <div class="{{ isActive ? 'active' : '' }}"></div>
+    // 应该替换为  <div :class="{ 'active': isActive }"></div>
 
     const res = parseText(staticClass, options.delimiters)
     if (res) {
@@ -33,7 +33,7 @@ function transformNode (el: ASTElement, options: CompilerOptions) {
   if (staticClass) {
     el.staticClass = JSON.stringify(staticClass.replace(/\s+/g, ' ').trim())
   }
-  // 获取动态绑定class属性
+  // 获取绑定的 class 属性的值
   const classBinding = getBindingAttr(el, 'class', false /* getStatic */)
   if (classBinding) {
     el.classBinding = classBinding
