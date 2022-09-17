@@ -9,14 +9,18 @@
 </head>
 <body>
   <div id="app">
-    {{ String(msg) }}
+    <!-- comments -->
+    <p>12</p>
   </div>
   <script>
     const vm = new Vue({
       el: '#app',
+      // template: '<span>text: {{ msg }} {{ content }}</span>',
       data: {
-        msg: 'Hello Vue.js'
+        msg: 'Hello Vue.js',
+        content: '!'
       },
+      comments: true, // 保留注释节点
     })
     window.vm = vm;
   </script>

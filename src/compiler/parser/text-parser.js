@@ -17,6 +17,14 @@ type TextParseResult = {
   tokens: Array<string | { '@binding': string }>
 }
 
+// 解析文本插值表达式
+// example: text: {{ msg }} {{ content }}
+// =>
+// {
+//  expression: '"text: "+_s(msg)+" "+_s(content)',
+//  tokens: ['text: ', {'@binding': 'msg'}, ' ', {'@binding': 'content'}
+// }
+
 export function parseText (
   text: string,
   delimiters?: [string, string]
@@ -43,6 +51,8 @@ export function parseText (
     lastIndex = index + match[0].length
   }
   if (lastIndex < text.length) {
+    // 当文本最后的一个插值表达式后面还有字符时会进入该if语句, 用来处理最后的文本
+    // example: abc {{ msg }} efg
     rawTokens.push(tokenValue = text.slice(lastIndex))
     tokens.push(JSON.stringify(tokenValue))
   }

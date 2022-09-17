@@ -28,13 +28,27 @@
       // template: '<div v-pre class="pre-class"></div>',
       // template: '<div><span v-for="item of list"></span></div>',
       // template: '<div><span v-for="(item, index) of list"></span></div>',
-      template: '<div><span v-for="(value, key, index) of obj"></span></div>',
+      // template: '<div><span v-for="(value, key, index) of obj"></span></div>',
+      template: `
+        <div class="container">
+          <h1>Parse HTML</h1>
+          <p class="msg" style="color: #ccc; font-weight: 16px;">My name is: {{ name }}. Age: 21</p>
+          <button @click.once="handleClick">Click</button>
+        </div>
+      `,
       data: {
         a: 'a',
         b: 'b',
         c: 'c',
         list: [1,2,3],
-        obj: { a: 'a' }
+        obj: { a: 'a' },
+        msg: 'Hello Vue.js!',
+        name: 'w2xi'
+      },
+      methods: {
+        handleClick() {
+          console.log('clicked');
+        }
       }
     });
     const html = '<div v-for="obj of list" class="box"></div>'

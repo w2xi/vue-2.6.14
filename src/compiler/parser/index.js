@@ -115,7 +115,7 @@ export function parse (
 
   // 用来修正当前正在解析元素的父级
   const stack = []
-  // 编译 html 字符串时是否放弃标签之间的空格, 如果为 true 则代表放弃 ?
+  // 编译 html 字符串时是否保留标签之间的空格
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
   let root
@@ -135,7 +135,7 @@ export function parse (
     }
   }
 
-  // 每当遇到一个标签的结束标签时，或遇到一元标签时都会调用该方法“闭合”标签
+  // 每当遇到一个标签的结束标签时, 或遇到一元标签时都会调用该方法'闭合'标签
   function closeElement (element) {
     trimEndingWhitespace(element)
     if (!inVPre && !element.processed) {
@@ -376,6 +376,7 @@ export function parse (
     chars (text: string, start: number, end: number) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
+          // 1. 模板中只有文本节点
           // example: <template>1</template> (template 为抽象组件)
           // text 和 template 都为 '1'
           if (text === template) {
@@ -384,6 +385,7 @@ export function parse (
               { start }
             )
           } else if ((text = text.trim())) {
+            // 2. 文本节点在根元素的外面
             // example:
             `
             <template>
@@ -398,7 +400,7 @@ export function parse (
             )
           }
         }
-        // 无根节点, 直接返回
+        // 当前文本无父节点元素, 直接返回
         return
       }
       // IE textarea placeholder bug
@@ -434,6 +436,8 @@ export function parse (
         let res
         let child: ?ASTNode
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
+          // type: 2, 包含字面量(插值)表达式的文本节点
+          // example: <span>text: {{ msg }} {{ content }}<span>
           child = {
             type: 2,
             expression: res.expression,

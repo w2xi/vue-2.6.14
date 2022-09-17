@@ -183,7 +183,7 @@ export function parseHTML (html, options) {
       }
 
       if (options.chars && text) {
-        // 调用 parser 的钩子函数
+        // 调用 parser 的钩子函数 解析文本
         options.chars(text, index - text.length, index)
       }
     } else {
