@@ -78,7 +78,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
   }
 
-  // 设置渲染函数的作用域代理，目的是提供更好的提示信息(模板中不存在该标识符时)
+  // 设置渲染函数的作用域代理, 目的是提供更好的提示信息(模板中不存在该标识符时)
   initProxy = function initProxy (vm) {
     if (hasProxy) {
       // determine which proxy handler to use

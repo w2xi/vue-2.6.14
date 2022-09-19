@@ -12,7 +12,7 @@ import { bindObjectListeners } from './bind-object-listeners'
 import { resolveScopedSlots } from './resolve-scoped-slots'
 import { bindDynamicKeys, prependModifier } from './bind-dynamic-keys'
 
-export function installRenderHelpers (target: any) {
+export function installRenderHelpers (target: any) { 
   target._o = markOnce
   target._n = toNumber
   target._s = toString

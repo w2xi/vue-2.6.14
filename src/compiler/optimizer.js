@@ -52,6 +52,7 @@ function markStatic (node: ASTNode) {
       const child = node.children[i]
       markStatic(child)
       if (!child.static) {
+        // 如果子元素 static 为 false, 则其父元素 static 被重置为 false
         node.static = false
       }
     }
@@ -114,6 +115,12 @@ function isStatic (node: ASTNode): boolean {
   ))
 }
 
+// 检测是否是 template 标签(使用v-for指令)的直接子元素
+// example: 
+// <template v-for="item of list">
+//  <span>{{ item }}</span>
+// </template>
+// 当解析 span 元素时, 其 parent 是 template 元素, 且存在 for 属性
 function isDirectChildOfTemplateFor (node: ASTElement): boolean {
   while (node.parent) {
     node = node.parent

@@ -39,6 +39,7 @@ Vue.prototype.$mount = function (
   // resolve template/el and convert to render function
   if (!options.render) {
     // 使用 template 或 el 选项构建渲染函数
+    // el 和 template 选项同时存在的情况下, tempalte 的优先级更高
     // 最终 template 会被转换为 模板字符串 (理想情况下)
 
     let template = options.template
