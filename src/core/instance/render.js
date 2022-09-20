@@ -62,7 +62,7 @@ export function setCurrentRenderingInstance (vm: Component) {
 
 // 在 Vue.prototype 上定义 $nextTick, _render 等方法
 export function renderMixin (Vue: Class<Component>) {
-  // 在 Vue.prototype 上添加一系列方法
+  // 在 Vue.prototype 上添加一系列方法, 用于辅助生成 vnode
   // install runtime convenience helpers
   installRenderHelpers(Vue.prototype)
 

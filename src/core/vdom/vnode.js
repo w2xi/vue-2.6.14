@@ -1,5 +1,15 @@
 /* @flow */
 
+// 元素节点
+// example: <p><span>Hello </span><span>Berwin</span></p>
+// 对应的 vnode:
+// {
+//   children: [VNode, VNode],
+//   context: {...},
+//   data: {...},
+//   tag: 'p',
+// }
+
 export default class VNode {
   tag: string | void;
   data: VNodeData | void;
@@ -71,6 +81,9 @@ export default class VNode {
   }
 }
 
+// 注释节点
+// example: <!-- 注释节点 -->
+// { text: '注释节点', isComment: true }
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
@@ -78,9 +91,21 @@ export const createEmptyVNode = (text: string = '') => {
   return node
 }
 
+// 文本节点 (除了 text 属性, 其余属性全是默认的 undefined 或 false)
+// example: content
+// { text: 'content' }
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
+
+// 克隆节点
+// 将现有节点的属性复制到新节点中,让新创建的节点和被克隆节点的属性保持一致,从而实现克隆效果.
+// 它的作用是优化静态节点和插槽节点(slot node).
+// 以静态节点为例,当组件内的某个状态发生变化后,当前组件会通过虚拟DOM重新渲染视图,静态节点因为它的内容不会改变,
+// 所以除了首次渲染需要执行渲染函数获取vnode之外,后续更新不需要执行渲染函数重新生成vnode.
+// 因此,这时就会使用创建克隆节点的方法将vnode克隆一份,使用克隆节点进行渲染.
+// 这样就不需要重新执行渲染函数生成新的静态节点的vnode,从而提升一定程度的性能
+//                                                            ---- <<Vue.js 深入浅出>>  by Berwin
 
 // optimized shallow clone
 // used for static nodes and slot nodes because they may be reused across
