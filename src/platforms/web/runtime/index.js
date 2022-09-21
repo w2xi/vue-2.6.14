@@ -32,6 +32,7 @@ extend(Vue.options.directives, platformDirectives)
 // 为 components 添加两个平台化的组件 Transition 和 TransitionGroup
 extend(Vue.options.components, platformComponents)
 
+// 在 Vue.prototype 上添加 web 平台的 patch 函数
 // install platform patch function
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 

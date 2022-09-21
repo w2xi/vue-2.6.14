@@ -9,4 +9,6 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// 创建 patch 方法
+// Vue.prototype.__patch__ = patch
 export const patch: Function = createPatchFunction({ nodeOps, modules })
