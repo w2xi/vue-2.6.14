@@ -67,6 +67,10 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
   return map
 }
 
+// patch 方法的工厂函数, 为其传入平台特有的一些操作, 并返回一个 patch 函数
+// backend: { nodeOps, modules }
+//  nodeOps: 提供了 web 平台的 DOM 操作 API
+//  modules: 提供了平台特有的一些操作, 比如：attr、class、style、events 等
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
@@ -81,6 +85,14 @@ export function createPatchFunction (backend) {
       }
     }
   }
+
+  // cbs = {
+  //   activate: [f],
+  //   create: [f, f, f, f, f, f, f, f],
+  //   destroy: [f, f, f],
+  //   remove: [f],
+  //   update: [f, f, f, f, f, f, f],
+  // }
 
   function emptyNodeAt (elm) {
     return new VNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
@@ -697,7 +709,16 @@ export function createPatchFunction (backend) {
     }
   }
 
+  /**
+   * vm.__patch__
+   *   1. 新节点不存在, 老节点存在, 调用 destroy, 销毁老节点
+   *   2. 如果 oldVnode 是真实元素, 则表示首次渲染, 创建新节点, 并插入 body, 然后移除老节点
+   *   3. 如果 oldVnode 不是真实元素, 则表示更新阶段, 执行 patchVnode
+   * 
+   * 返回 patch 方法
+   */
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
+    // 新节点不存在, 老节点存在, 调用 destroy, 销毁老节点
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
@@ -707,16 +728,23 @@ export function createPatchFunction (backend) {
     const insertedVnodeQueue = []
 
     if (isUndef(oldVnode)) {
+      // 新的 vnode 存在, 老的 vnode 不存在, 这种情况会在一个组件初次渲染的时候出现, 比如：
+      // <div id="app"><comp></comp></div>
+      // 这里的 comp 组件初次渲染时就会走这儿
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
+      // 判断 oldVnode 是否为真实元素
       const isRealElement = isDef(oldVnode.nodeType)
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
+        // 不是真实元素, 但是老节点和新节点是同一个节点, 则是更新阶段, 执行 patch 更新节点
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
+        // 如果是真实元素, 则表示初次渲染
         if (isRealElement) {
+          // 挂载到真实元素以及处理服务端渲染的情况
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
           // a successful hydration.
@@ -738,15 +766,19 @@ export function createPatchFunction (backend) {
               )
             }
           }
+          // 走到这儿说明不是服务端渲染, 或者 hydration 失败, 则根据 oldVnode 创建一个 vnode 节点
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
           oldVnode = emptyNodeAt(oldVnode)
         }
 
+        // 拿到老节点的真实元素
         // replacing existing element
         const oldElm = oldVnode.elm
+        // 获取老节点的父元素, 即 body
         const parentElm = nodeOps.parentNode(oldElm)
 
+        // 基于新 vnode 创建整棵 DOM 树并插入到 body 元素下
         // create new node
         createElm(
           vnode,
@@ -758,6 +790,7 @@ export function createPatchFunction (backend) {
           nodeOps.nextSibling(oldElm)
         )
 
+        // 递归更新父占位符节点元素
         // update parent placeholder node element, recursively
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent
@@ -788,6 +821,7 @@ export function createPatchFunction (backend) {
           }
         }
 
+        // 移除老节点
         // destroy old node
         if (isDef(parentElm)) {
           removeVnodes([oldVnode], 0, 0)

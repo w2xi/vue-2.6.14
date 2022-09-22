@@ -12,9 +12,9 @@
   <script>
     const vm = new Vue({
       el: '#app',
-      // template: '<span>text</span>',
+      template: '<span>text</span>',
       // template: '<p><span>Hello </span><span>Berwin</span></p>',
-      template: '<Child></Child>'
+      // template: '<Child></Child>'
     });
   </script>
   <script>
@@ -59,11 +59,7 @@
       tag: 'span',
       data: undefined,
       children: [
-        // VNode
-        {
-          text: 'text', 
-          // ... 默认属性
-        }
+        { text: 'text', /* ...其它默认属性 */}, // VNode
       ],
       text: undefined,
       elm: undefined,
@@ -86,6 +82,6 @@
       asyncMeta: undefined,
       isAsyncPlaceholder: false,
     };
-  </script>
+  </script>  
 </body>
 </html>
