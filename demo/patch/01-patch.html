@@ -32,5 +32,23 @@
       }
     });
   </script>
+  <script>
+    const template = `
+      <div id="app">
+        <Child></Child>
+      </div>
+    `
+    // render function
+    const render = function anonymous() {
+      with(this){
+        return _c(
+          'div',                   // tag
+          { attrs: {"id":"app"} }, // data
+          [_c('child')],           // children
+          1                        // normalizationType
+        )
+      }
+    }
+  </script>
 </body>
 </html>

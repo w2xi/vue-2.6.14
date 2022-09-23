@@ -35,7 +35,8 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
-    if (options && options._isComponent) { // 内部属性
+    if (options && options._isComponent) {
+      // _isComponent 为 true, 表示当前初始化的是组件
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.

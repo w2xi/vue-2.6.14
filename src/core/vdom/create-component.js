@@ -109,10 +109,14 @@ export function createComponent (
     return
   }
 
+  // Vue 构造函数
   const baseCtor = context.$options._base
 
+  // 注册组件为普通对象, 例如:
+  // const Child = { template: '<div>{{ msg }}</div>', data() ({ msg: 'a' } ) }
   // plain options object: turn it into a constructor
   if (isObject(Ctor)) {
+    // 调用 Vue 构造函数的 extend 方法将 Ctor 转为 构造函数 (VueComponent)
     Ctor = baseCtor.extend(Ctor)
   }
 
@@ -125,6 +129,9 @@ export function createComponent (
     return
   }
 
+  // 异步组件
+  // example:
+  // const Child = () => import('@/views/Child.vue')
   // async component
   let asyncFactory
   if (isUndef(Ctor.cid)) {
@@ -205,6 +212,7 @@ export function createComponent (
   return vnode
 }
 
+// 创建组件(vnode)实例
 export function createComponentInstanceForVnode (
   // we know it's MountedComponentVNode but flow doesn't
   vnode: any,
@@ -222,6 +230,8 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+
+  // 实例化组件
   return new vnode.componentOptions.Ctor(options)
 }
 

@@ -206,7 +206,7 @@ function mergeAssets (
   }
 }
 
-// 资源的合并策略 ( 指令，过滤器，组件 )
+// 资源的合并策略 ( 组件, 指令, 过滤器 )
 // ['component', 'directive', 'filter']
 ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets
@@ -423,7 +423,7 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
 
 
 /**
- * 项目合并:
+ * 选项合并:
  * 在 `实例化` 和 `继承` 时会执行该操作
  * new Vue({}) | Vue.extend({}) | Vue.mixin({})
  * Merge two option objects into a new one.

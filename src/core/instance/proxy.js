@@ -54,8 +54,8 @@ if (process.env.NODE_ENV !== 'production') {
     })
   }
 
-  // handler.has() 方法是针对 in 操作符的代理方法
-  // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/has
+  // handler.has()
+  // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy/has#%E6%8B%A6%E6%88%AA
   const hasHandler = {
     has (target, key) {
       const has = key in target
