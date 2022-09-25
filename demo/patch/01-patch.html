@@ -23,13 +23,13 @@
         return {
           msg: 'Hello Child!'
         }
-      }
+      },
     }
     const vm = new Vue({
       el: '#app',
       components: {
         Child,
-      }
+      },
     });
   </script>
   <script>
@@ -48,7 +48,27 @@
           1                        // normalizationType
         )
       }
-    }
+    };
+
+    // Child component
+    const childRenderFn = function anonymous() {
+      with(this){
+        return _c(
+          'div',
+          [
+            _c(
+              'h1',
+              [_v("Child component!")]
+            ),
+            _v(" "),
+            _c(
+              'p',
+              [_v(_s(msg))]
+            )
+          ]
+        )
+      }
+    };
   </script>
 </body>
 </html>

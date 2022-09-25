@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LifeCycle</title>
+  <title>LifeCycle hooks invoked sequence</title>
   <script src="../dist/vue.js"></script>
 </head>
 <body>
@@ -15,42 +15,66 @@
     </div>
   </div>
   <script>
-    // API https://cn.vuejs.org/v2/api/#parent
-
-    // 这也算是 `父子组件通信` 的一种方式
-
-    // 子组件本身并没有指定 parent 选项
-    const ChildComponent = {
+    const Child = {
+      template: `
+        <div>
+          <h1>Child component!</h1>
+          <p>{{ msg }}</p>
+        </div>
+      `,
       data() {
         return {
-           value: 'Child Component'
+          msg: 'Hello Child!'
         }
+      },
+      beforeCreate() {
+        console.log('Child beforeCreate');
       },
       created() {
-        // 但是在子组件中访问父实例，能够找到正确的父实例引用 
-        console.log(this.$options.parent)
-        // or
-        // console.log(this.$parent)
+        console.log('Child created');
       },
-      methods: {
-        handleCreated() {
-          console.log('child created')
-        }
-      }
+      beforeMount() {
+        console.log('Child beforeMount');
+      },
+      beforeUpdate() {
+        console.log('Child beforeUpdate');
+      },
+      updated() {
+        console.log('Child updated');
+      },
+      mounted() {
+        console.log('Child mounted');
+      },
     }
-
-    // 父实例可以通过 $children 访问到子实例
     const vm = new Vue({
       el: '#app',
-      data: {
-        msg: 'Life Cycle'
-      },
       components: {
-        ChildComponent
+        Child,
+      },
+      beforeCreate() {
+        console.log('Parent beforeCreate');
+      },
+      created() {
+        console.log('Parent created');
+      },
+      beforeMount() {
+        console.log('Parent beforeMount');
+      },
+      beforeUpdate() {
+        console.log('Parent beforeUpdate');
+      },
+      updated() {
+        console.log('Parent updated');
+      },
+      mounted() {
+        console.log('Parent mounted');
       },
     });
 
-    window.vm = vm;
+    // lifecycle hooks invoked sequences:
+    // Parent beforeCreate -> Parent created -> Parent beforeMount
+    //   -> Child beforeCreate -> Child created -> Child beforeMount -> Child mounted 
+    // -> Parent mounted
   </script>
 </body>
 </html>

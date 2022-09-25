@@ -490,6 +490,7 @@ export function mergeOptions (
 }
 
 /**
+ * 查找 components, directives, filters 资源选项
  * Resolve an asset.
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
@@ -505,15 +506,18 @@ export function resolveAsset (
     return
   }
   const assets = options[type]
+  // 优先检查 components, directives, filters 的局部注册
   // check local registration variations first
   if (hasOwn(assets, id)) return assets[id]
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
+  // 回退到原型链上查找 (因为 components, directives, filters 可能是全局注册)
   // fallback to prototype chain
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
+    // 在非生产环境下, 如果 warnMissing 为真且查找失败, 则打印警告信息
     warn(
       'Failed to resolve ' + type.slice(0, -1) + ': ' + id,
       options

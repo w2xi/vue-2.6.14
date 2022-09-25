@@ -42,12 +42,15 @@ const componentVNodeHooks = {
     ) {
       // kept-alive components, treat as a patch
       const mountedNode: any = vnode // work around flow
+      // 如果是被 keep-alive 包裹的组件, 则再执行 prepatch 钩子
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 实例化组件, 并将组件实例赋值给 vnode.componentInstance
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
       )
+      // 组件挂载
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -98,6 +101,32 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
+
+/**
+ * 组件节点. 有2个独有的属性, 分别是 componentInstance 和 componentOptions
+ * example: <Child></Child>
+ * 所对应的 vnode 如下:
+ * {
+ *  componentInstance: 组件实例对象,
+ *  componentOptions: 组件节点的选项参数(包含 propsData, tag, children 等信息),
+ *  context: {...},
+ *  data: {...},
+ *  tag: 'vue-component-1-child',
+ * }
+ */
+
+/**
+ * 函数式节点. 有2个独有的属性, 分别是 functionalContext 和 functionalOptions
+ * 通常一个函数式组件的 vnode 如下:
+ * {
+ *  functionalContext: {...},
+ *  functionalOptions: {...},
+ *  context: {...},
+ *  data: {...},
+ *  data: 'div',
+ * }
+ */
+
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -112,11 +141,11 @@ export function createComponent (
   // Vue 构造函数
   const baseCtor = context.$options._base
 
-  // 注册组件为普通对象, 例如:
+  // 普通组件, 例如:
   // const Child = { template: '<div>{{ msg }}</div>', data() ({ msg: 'a' } ) }
   // plain options object: turn it into a constructor
   if (isObject(Ctor)) {
-    // 调用 Vue 构造函数的 extend 方法将 Ctor 转为 构造函数 (VueComponent)
+    // 调用 Vue.extend 方法将 Ctor 转为 构造函数 (VueComponent)
     Ctor = baseCtor.extend(Ctor)
   }
 
@@ -129,7 +158,7 @@ export function createComponent (
     return
   }
 
-  // 异步组件
+  // 异步组件(函数式组件)
   // example:
   // const Child = () => import('@/views/Child.vue')
   // async component
@@ -189,6 +218,7 @@ export function createComponent (
     }
   }
 
+  // 在 data 上添加 hook 属性, hook 包含 init, prepatch, insert, destroy 4个钩子函数
   // install component management hooks onto the placeholder node
   installComponentHooks(data)
 
