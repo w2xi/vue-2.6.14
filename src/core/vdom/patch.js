@@ -159,6 +159,7 @@ export function createPatchFunction (backend) {
       vnode = ownerArray[index] = cloneVNode(vnode)
     }
 
+    // 是否作为根节点插入
     vnode.isRootInsert = !nested // for transition enter check
     /**
      * 重点
@@ -174,6 +175,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     // vnode 的子节点
     const children = vnode.children
+    // 当前节点标签名
     const tag = vnode.tag
     if (isDef(tag)) {                     // 元素节点
       if (process.env.NODE_ENV !== 'production') {
@@ -191,7 +193,7 @@ export function createPatchFunction (backend) {
         }
       }
 
-      // 根据标签名称创建 DOM 节点, 并将值赋值给 vnode.elm
+      // 根据当前节点标签名创建 DOM 节点, 并将值赋值给 vnode.elm
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode)
@@ -360,15 +362,18 @@ export function createPatchFunction (backend) {
   }
 
   /**
-   * 调用 各个模块的 create 方法，比如创建属性的、创建样式的、指令的等等 ，然后执行组件的 mounted 生命周期方法
+   * 调用 各个模块的 create 方法，比如创建属性的、创建样式的、事件的、指令的等等，然后执行组件的 mounted 生命周期方法
    */
   function invokeCreateHooks (vnode, insertedVnodeQueue) {
     for (let i = 0; i < cbs.create.length; ++i) {
       cbs.create[i](emptyNode, vnode)
     }
+    // 当前 vnode 节点的 hook
     i = vnode.data.hook // Reuse variable
     if (isDef(i)) {
+      // 如果 hook 有  create 钩子
       if (isDef(i.create)) i.create(emptyNode, vnode)
+      // 如果 hook 有 insert 钩子
       if (isDef(i.insert)) insertedVnodeQueue.push(vnode)
     }
   }

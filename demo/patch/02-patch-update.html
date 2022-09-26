@@ -25,5 +25,33 @@
       },
     });
   </script>
+
+  <script>
+    // render function
+    function anonymous() {
+      with(this){
+        return _c(
+          'div',
+          {
+            attrs:{ id: "app" }
+          },
+          [
+            _c(
+              'div',
+              [_v(_s(msg))]
+            ),
+            _v(" "),
+            _c(
+              'button',
+              {
+                on: { click: handleClick }
+              },
+              [_v("mutate")]
+            )
+          ]
+        )
+      }
+    }
+  </script>
 </body>
 </html>
