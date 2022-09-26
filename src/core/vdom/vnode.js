@@ -49,26 +49,26 @@ export default class VNode {
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {
-    this.tag = tag
-    this.data = data
-    this.children = children
-    this.text = text
-    this.elm = elm
-    this.ns = undefined
-    this.context = context
+    this.tag = tag                                // 当前节点的标签名
+    this.data = data                              // 当前节点的数据
+    this.children = children                      // 当前节点的子节点
+    this.text = text                              // 当前节点的文本
+    this.elm = elm                                // 当前节点对应的真实 DOM
+    this.ns = undefined                           // 当前节点的命名空间
+    this.context = context                        // 当前节点的编译作用域
     this.fnContext = undefined
     this.fnOptions = undefined
     this.fnScopeId = undefined
-    this.key = data && data.key
-    this.componentOptions = componentOptions
-    this.componentInstance = undefined
-    this.parent = undefined
-    this.raw = false
-    this.isStatic = false
-    this.isRootInsert = true
-    this.isComment = false
-    this.isCloned = false
-    this.isOnce = false
+    this.key = data && data.key                   // 当前节点的 key 属性
+    this.componentOptions = componentOptions      // 组件的 options 选项对象
+    this.componentInstance = undefined            // 当前节点对应的组件实例对象
+    this.parent = undefined                       // 当前节点的父节点
+    this.raw = false                              // 是否是原生 html
+    this.isStatic = false                         // 是否是静态节点
+    this.isRootInsert = true                      // 是否作为根节点插入
+    this.isComment = false                        // 是否是注释节点
+    this.isCloned = false                         // 是否是克隆节点
+    this.isOnce = false                           // 是否有 v-once 指令
     this.asyncFactory = asyncFactory
     this.asyncMeta = undefined
     this.isAsyncPlaceholder = false

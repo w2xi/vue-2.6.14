@@ -140,7 +140,7 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
-  // 基于 vnode 创建整棵 DOM 树，并插入到父节点上
+  // 基于 vnode 创建整棵 DOM 树, 并插入到父节点上
   function createElm (
     vnode,
     insertedVnodeQueue,
@@ -171,14 +171,12 @@ export function createPatchFunction (backend) {
       return
     }
 
-    // 获取 data 对象
     const data = vnode.data
-    // 所有的孩子节点
+    // vnode 的子节点
     const children = vnode.children
     const tag = vnode.tag
-    if (isDef(tag)) {
+    if (isDef(tag)) {                     // 元素节点
       if (process.env.NODE_ENV !== 'production') {
-        // 非生产环境下
         if (data && data.pre) {
           creatingElmInVPre++
         }
@@ -193,7 +191,7 @@ export function createPatchFunction (backend) {
         }
       }
 
-      // 创建新节点
+      // 根据标签名称创建 DOM 节点, 并将值赋值给 vnode.elm
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode)
@@ -219,23 +217,25 @@ export function createPatchFunction (backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
-        // 递归创建所有子节点（普通元素、组件）
+        // 递归创建子节点 (普通元素、组件)
+        // vnode 节点的 children 属性保存了当前节点的所有子虚拟节点 (child virtual node)
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
+        // 将当前元素节点插入到父节点
         insert(parentElm, vnode.elm, refElm)
       }
 
       if (process.env.NODE_ENV !== 'production' && data && data.pre) {
         creatingElmInVPre--
       }
-    } else if (isTrue(vnode.isComment)) {
-      // 注释节点，创建注释节点并插入父节点
+    } else if (isTrue(vnode.isComment)) { // 注释节点
+      // 创建注释节点并插入父节点
       vnode.elm = nodeOps.createComment(vnode.text)
       insert(parentElm, vnode.elm, refElm)
-    } else {
-      // 文本节点，创建文本节点并插入父节点
+    } else {                              // 文本节点
+      // 创建文本节点并插入父节点
       vnode.elm = nodeOps.createTextNode(vnode.text)
       insert(parentElm, vnode.elm, refElm)
     }
@@ -334,21 +334,20 @@ export function createPatchFunction (backend) {
   }
 
   /**
-   * 创建所有子节点，并将子节点插入父节点，形成一棵 DOM 树
+   * 创建子节点, 并将子节点插入父节点, 形成一棵 DOM 树
    */
   function createChildren (vnode, children, insertedVnodeQueue) {
-    if (Array.isArray(children)) {
-      // children 是数组，表示是一组节点
+    if (Array.isArray(children)) {        // children 是数组, 表示是一组节点
       if (process.env.NODE_ENV !== 'production') {
         // 检测这组节点的 key 是否重复
         checkDuplicateKeys(children)
       }
-      // 遍历这组节点，依次创建这些节点然后插入父节点，形成一棵 DOM 树
+      // 遍历子节点, 依次创建这些子节点然后插入到父节点, 形成一棵 DOM 树
       for (let i = 0; i < children.length; ++i) {
         createElm(children[i], insertedVnodeQueue, vnode.elm, null, true, children, i)
       }
-    } else if (isPrimitive(vnode.text)) {
-      // 说明是文本节点，创建文本节点，并插入父节点
+    } else if (isPrimitive(vnode.text)) { // 文本节点
+      // 创建文本节点, 并插入到父节点
       nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(String(vnode.text)))
     }
   }
@@ -654,7 +653,7 @@ export function createPatchFunction (backend) {
       // 新节点不是文本节点
 
       if (isDef(oldCh) && isDef(ch)) {
-        // 如果新老节点都有子节点，则递归执行 diff 过程
+        // 如果新老节点都有子节点, 则递归执行 diff 过程
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
       } else if (isDef(ch)) {
         if (process.env.NODE_ENV !== 'production') {
@@ -809,18 +808,19 @@ export function createPatchFunction (backend) {
    * 
    *  删除节点:
    *    1. vnode 不存在, oldVnode 存在, 销毁 oldVnode
-   *  新增节点:
-   *    2. vnode 存在, oldVnode 不存在, 说明是组件的首次渲染
+   *  创建节点:
+   *    2. vnode 存在, oldVnode 不存在, 说明是组件的首次渲染, 使用 vnode 创建节点插入到视图
    *    3. 如果 oldVnode 是真实元素, 则表示首次渲染, 创建新节点, 并插入 body, 然后移除老节点
    *  更新节点:
-   *    4. 如果 oldVnode 不是真实元素, 且新旧两个节点是同一个节点, 则表示更新阶段, 执行 patchVnode 方法
+   *    4. 如果 oldVnode 不是真实元素 且 新旧两个节点是同一个节点, 则表示更新阶段, 
+   *        使用 patchVnode 方法, 进行更详细的对比与更新操作
+   *          
    * 
    * 返回 patch 方法
    */
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
       // 删除节点#1
-      // 则最终会执行组件实例的 vm.$destroy 方法销毁老节点
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
     }
@@ -829,13 +829,15 @@ export function createPatchFunction (backend) {
     const insertedVnodeQueue = []
 
     if (isUndef(oldVnode)) {
-      // 新增节点#3
-      // 新的 vnode 存在, 老的 oldVnode 不存在, 这种情况会在一个组件初次渲染的时候出现, 比如：
-      // `<Child></Child>`, 这里的 Child 组件初次渲染时就会走这儿
+      // 新增节点#2
+      // 比如：`<Child></Child>`, 这里的 Child 组件初次渲染时就会走这儿
       // empty mount (likely as component), create new root element
       isInitialPatch = true
+      // 此时, 使用 vnode 创建节点插入到视图
       createElm(vnode, insertedVnodeQueue)
     } else {
+      // vnode 和 oldVnode 都存在
+
       // 判断 oldVnode 是否为真实元素
       const isRealElement = isDef(oldVnode.nodeType)
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
@@ -843,8 +845,11 @@ export function createPatchFunction (backend) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
-        // 如果是真实元素, 则表示初次渲染
+        // 进入这里说明: oldVnode 是真实元素 或者 oldVnode 和 vnode 不是同一个节点
+
         if (isRealElement) {
+          // oldVnode 是真实元素, 则表示初次渲染
+
           // 挂载到真实元素以及处理服务端渲染的情况
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -867,7 +872,8 @@ export function createPatchFunction (backend) {
               )
             }
           }
-          // 走到这儿说明不是服务端渲染, 或者 hydration 失败, 则根据 oldVnode 创建一个 vnode 节点
+          
+          // 将真实元素转换为 vnode
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
           oldVnode = emptyNodeAt(oldVnode)
@@ -876,10 +882,19 @@ export function createPatchFunction (backend) {
         // 拿到老节点的真实元素
         // replacing existing element
         const oldElm = oldVnode.elm
-        // 获取老节点的父元素, 即 body
+        // 获取老元素的父元素 (body)
         const parentElm = nodeOps.parentNode(oldElm)
 
-        // 基于新 vnode 创建整棵 DOM 树并插入到 body 元素下
+        /**
+         * 基于 vnode 创建整棵 DOM 树并插入到 body 元素下
+         * 
+         *      虚拟 DOM               真实 DOM
+         * 
+         *       vnode                  node
+         *       /   \        =>        /  \            =>    视图
+         *    vnode  vnode            node node
+         * 
+         */
         // create new node
         createElm(
           vnode,
@@ -887,6 +902,7 @@ export function createPatchFunction (backend) {
           // extremely rare edge case: do not insert if old element is in a
           // leaving transition. Only happens when combining transition +
           // keep-alive + HOCs. (#4590)
+          // 这里基本上可以认为传的就是 parentElm 元素
           oldElm._leaveCb ? null : parentElm,
           nodeOps.nextSibling(oldElm)
         )
@@ -922,7 +938,7 @@ export function createPatchFunction (backend) {
           }
         }
 
-        // 移除老节点
+        // 移除老节点 ( 将视图中的节点删除 )
         // destroy old node
         if (isDef(parentElm)) {
           removeVnodes([oldVnode], 0, 0)
