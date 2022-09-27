@@ -486,6 +486,9 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 更新子节点 ( diff 过程 )
+  // 大概分为 4 种操作: 更新节点, 新增节点, 删除节点, 移动节点
+  // 
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0
     let newStartIdx = 0
@@ -660,41 +663,43 @@ export function createPatchFunction (backend) {
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }
     if (isUndef(vnode.text)) {
-      // 新虚拟节点无 text 属性, 说明是 vnode 一个元素节点.
+      // 新虚拟节点无 text 属性, 说明 vnode 是一个元素节点.
       // 元素节点通常有子节点, 也就是 children 属性, 但也有可能没有子节点, 所以存在两种不同情况:
       // 1. vnode 有 children
-      //  i.  oldVnode 有   children, 执行 diff 过程
-      //  ii. oldVnode 没有 children, 添加这些新的子节点
+      //  i.  oldVnode 有   children, 递归执行 diff 过程
+      //  ii. oldVnode 没有 children, 说明 oldVnode 要么是一个空标签, 要么是有文本的文本节点,
+      //        若是文本节点, 则清空文本, 然后将 vnode 中的 children 创建为真实的 DOM 节点并插入到视图
       // 2. vnode 没有 children
       //  i.  oldVnode 有 children, 移除 oldVnode 的 children 子节点
-      //  ii. oldVnode 是 文本节点,  将文本内容置空
+      //  ii. oldVnode 是 文本节点,  将文本内容置空为空节点
 
       if (isDef(oldCh) && isDef(ch)) {
-        // 如果新老节点都有子节点, 则递归执行 diff 过程
+        // #1.i 更新子节点
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
       } else if (isDef(ch)) {
+        // #1.ii
         if (process.env.NODE_ENV !== 'production') {
           checkDuplicateKeys(ch)
         }
         if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
-        // 老孩子不存在, 新孩子存在, 则创建这些新孩子节点
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
       } else if (isDef(oldCh)) {
-        // 老孩子存在, 新孩子不存在, 则移除这些老孩子节点
+        // #2.i
         removeVnodes(oldCh, 0, oldCh.length - 1)
       } else if (isDef(oldVnode.text)) {
-        // 老节点是文本节点, 则将文本内容置空
+        // #2.ii
         nodeOps.setTextContent(elm, '')
       }
     } else if (oldVnode.text !== vnode.text) {
-      // 新节点是文本节点, 且 新旧文本节点值不同
-      // 因为新生成的vnode有text属性, 那么不论之前旧节点的子节点是什么, 直接调用setTextContent方法,
-      // 来将将视图中DOM节点的内容改为虚拟节点(vnode)的text属性所保存的文字
-      // (  
-      //   因为更新是以新创建的虚拟节点(vnode)为准的, 
-      //   所以如果新创建的虚拟节点有文本, 那么根本就不需要关心之前旧节点中所包含的内容是什么,
-      //   无论是文本还是元素节点, 这都不重要.
-      // )
+      /**
+       * 新节点有 text 属性, 且 新旧 text 属性值不同
+       * 那么不论之前旧节点的子节点是什么, 直接调用setTextContent方法,
+       * 来将将视图中DOM节点的内容改为虚拟节点(vnode)的text属性所保存的文字
+       *
+       * 因为更新是以新创建的虚拟节点(vnode)为准的, 
+       * 所以如果新创建的虚拟节点有文本, 那么根本就不需要关心之前旧节点中所包含的内容是什么,
+       * 无论是文本还是元素节点, 这都不重要.
+       */
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
@@ -708,6 +713,7 @@ export function createPatchFunction (backend) {
     if (isTrue(initial) && isDef(vnode.parent)) {
       vnode.parent.data.pendingInsert = queue
     } else {
+      // 对于组件, 会执行 insert 钩子 ( 内部会执行组件的 mounted 生命周期钩子函数 )
       for (let i = 0; i < queue.length; ++i) {
         queue[i].data.hook.insert(queue[i])
       }
