@@ -486,9 +486,15 @@ export function createPatchFunction (backend) {
     }
   }
 
-  // 更新子节点 ( diff 过程 )
-  // 大概分为 4 种操作: 更新节点, 新增节点, 删除节点, 移动节点
-  // 
+  /**
+   * diff 过程 ( 更新子节点 ):
+   *   大概分为 4 种操作: 更新节点, 新增节点, 删除节点, 移动节点
+   *   diff 优化：做了四种假设，假设新老节点开头结尾有相同节点的情况，一旦命中假设，就避免了一次循环，以提高执行效率
+   *             如果不幸没有命中假设，则执行遍历，从老节点中找到新开始节点
+   *             找到相同节点，则执行 patchVnode，然后将老节点移动到正确的位置
+   *   如果老节点先于新节点遍历结束，则剩余的新节点执行新增节点操作
+   *   如果新节点先于老节点遍历结束，则剩余的老节点执行删除操作，移除这些老节点
+   */
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0
     let newStartIdx = 0
@@ -533,11 +539,18 @@ export function createPatchFunction (backend) {
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
       } else {
+        // 当前新子节点: 本次循环所指向的新子节点
+        // oldChildren: 旧子节点列表
+
+        // 创建 oldChildren 的 key => index 映射对象
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+        // 找到当前新子节点在 oldChildren 中的位置
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
         if (isUndef(idxInOld)) { // New element
+          // 在 oldChildren 中没有找到和当前新子节点相同的节点, 说明【当前新子节点是新增节点】
+          // 对于新增节点, 创建该节点后插入到 oldChildren 中所有未处理节点(未处理就是没有进行任何更新操作的节点)的前面
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
         } else {
           vnodeToMove = oldCh[idxInOld]
@@ -583,7 +596,7 @@ export function createPatchFunction (backend) {
   }
 
   /**
-  * 找到新节点（vnode）在老节点（oldCh）中的位置索引 
+  * 找到新节点（vnode）在老节点（oldCh）中的位置索引
   */
   function findIdxInOld (node, oldCh, start, end) {
     for (let i = start; i < end; i++) {

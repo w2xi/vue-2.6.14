@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Vue2</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div ref="divRef" @click="handleClick">{{ msg }}</div>
+  </div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        msg: '张三'
+      },
+      mounted() {
+        console.log('mounted')
+        this.msg = '李四'
+        console.log(this.$refs.divRef.textContent) // 获取的是未改变之前的文本值 '张三'
+        this.$refs.divRef.click()
+        this.$nextTick(() => {
+          // DOM 节点已经更新完毕
+          console.log(this.$refs.divRef.textContent) // '李四'
+        })
+      },
+      methods: {
+        handleClick() {
+          console.log('clicked!')
+        }
+      },
+    })
+  </script>
+</body>
+</html>
