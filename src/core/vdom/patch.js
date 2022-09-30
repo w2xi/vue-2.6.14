@@ -506,6 +506,7 @@ export function createPatchFunction (backend) {
     let newEndVnode = newCh[newEndIdx]
     let oldKeyToIdx, idxInOld, vnodeToMove, refElm
 
+    // 只有在 <transition-group> 组件中 remvoeOnly 为 true, 其他情况都为 false
     // removeOnly is a special flag used only by <transition-group>
     // to ensure removed elements stay in correct relative positions
     // during leaving transitions
@@ -539,7 +540,8 @@ export function createPatchFunction (backend) {
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
       } else {
-        // 当前新子节点: 本次循环所指向的新子节点
+        // 当前新子节点: 本次循环所指向的新子节点 ( newStartVnode )
+        // 当前旧子节点: 本次循环所指向的旧子节点 ( oldStartVnode )
         // oldChildren: 旧子节点列表
 
         // 创建 oldChildren 的 key => index 映射对象
@@ -549,16 +551,25 @@ export function createPatchFunction (backend) {
           ? oldKeyToIdx[newStartVnode.key]
           : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
         if (isUndef(idxInOld)) { // New element
+          // 【新增节点】
           // 在 oldChildren 中没有找到和当前新子节点相同的节点, 说明【当前新子节点是新增节点】
           // 对于新增节点, 创建该节点后插入到 oldChildren 中所有未处理节点(未处理就是没有进行任何更新操作的节点)的前面
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
         } else {
+          // 【移动节点】
+          // 在 oldChildren 中找到了和当前新子节点相同的节点, 但是位置不同.
+          // 待移动的旧子节点
           vnodeToMove = oldCh[idxInOld]
+          // 如果 待移动的旧子节点 和 当前新子节点 是同一个节点
           if (sameVnode(vnodeToMove, newStartVnode)) {
+            // 【更新节点】
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
             oldCh[idxInOld] = undefined
+            // 【移动节点】
+            // 将 待移动的旧子节点 插入到 当前旧子节点 之前, 完成移动操作
             canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
           } else {
+            // 【新增节点】
             // same key but different element. treat as new element
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
           }
@@ -566,7 +577,17 @@ export function createPatchFunction (backend) {
         newStartVnode = newCh[++newStartIdx]
       }
     }
+    
+    // 循环遍历结束
+    // 如果 oldStartIdx > oldEndIdx 
+    // 说明 oldChildren 的所有节点已经被遍历了一遍, 
+    // 否则,
+    // 如果 oldStartIdx <= oldEndIdx 且 newStartIdx > newEndIdx
+    // 说明 newChildren 的所有节点已经被遍历了一遍, 而 oldChildren 中还有剩余节点未被处理
+    // 那么这些节点就是被废弃的, 需要删除的节点.
+
     if (oldStartIdx > oldEndIdx) {
+      // 如果 refElm 不存在, 说明
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
       addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
     } else if (newStartIdx > newEndIdx) {
