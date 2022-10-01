@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patching - diff</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <ul>
+      <li v-for="(item,index) of items" :key="item">{{ item }} (key: {{ item.charAt(0).toLowerCase() }})</li>
+    </ul>
+    <button @click="shuffle">shuffle</button>
+  </div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        items: ['Vue', 'React', 'Angular'],
+      },
+      methods: {
+        shuffle() {
+          this.items = this.items.sort(() => Math.random() - 0.5)
+        },
+      }
+    });
+  </script>
+</body>
+</html>

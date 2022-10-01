@@ -488,12 +488,7 @@ export function createPatchFunction (backend) {
 
   /**
    * diff 过程 ( 更新子节点 ):
-   *   大概分为 4 种操作: 更新节点, 新增节点, 删除节点, 移动节点
-   *   diff 优化：做了四种假设，假设新老节点开头结尾有相同节点的情况，一旦命中假设，就避免了一次循环，以提高执行效率
-   *             如果不幸没有命中假设，则执行遍历，从老节点中找到新开始节点
-   *             找到相同节点，则执行 patchVnode，然后将老节点移动到正确的位置
-   *   如果老节点先于新节点遍历结束，则剩余的新节点执行新增节点操作
-   *   如果新节点先于老节点遍历结束，则剩余的老节点执行删除操作，移除这些老节点
+   * 大概分为 4 种操作: 更新节点, 新增节点, 删除节点, 移动节点.
    */
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0
@@ -516,35 +511,52 @@ export function createPatchFunction (backend) {
       checkDuplicateKeys(newCh)
     }
 
+    // 在 while 循环的一开始先判断了 oldStartVnode 和 oldEndVnode 是否存在, 
+    // 如果不存在, 则直接跳过这个节点,处理下一个节点.
+    // 之所以有这么一个判断,主要是为了处理旧节点已经被移动到其他位置的情况.移动节点时,真正移动的是真实的DOM.
+    // 移动真实DOM节点后,为了防止后续重复处理同一个节点, 旧的虚拟子节点就会被设置为 undefined, 
+    // 用来标记这个节点已经被处理并且移动到其他位置.
+
+    // 优化策略 
+    // 快速地比较两个节点的方式 ( 提升性能 )
+    // 新前: newChildren 中所有未处理的第一个节点      newStartVnode
+    // 新后: newChildren 中所有未处理的最后一个节点    newEndVnode
+    // 旧前: oldChildren 中所有未处理的第一个节点      oldStartVnode
+    // 旧后: oldChildren 中所有未处理的最后一个节点    oldEndVnode
+
+    // 如果以上4种对比方式都没有匹配上, 最后再使用循环遍历来查找节点
+
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
       if (isUndef(oldStartVnode)) {
         oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
       } else if (isUndef(oldEndVnode)) {
         oldEndVnode = oldCh[--oldEndIdx]
-      } else if (sameVnode(oldStartVnode, newStartVnode)) {
+      } else if (sameVnode(oldStartVnode, newStartVnode)) { // 新前和旧前
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
         oldStartVnode = oldCh[++oldStartIdx]
         newStartVnode = newCh[++newStartIdx]
-      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+      } else if (sameVnode(oldEndVnode, newEndVnode)) {     // 新后和旧后
         patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
         oldEndVnode = oldCh[--oldEndIdx]
         newEndVnode = newCh[--newEndIdx]
-      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right  新后和旧前
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx)
+        //【移动节点】 将 `旧前`DOM元素节点 移动到 `旧后`DOM元素节点的后面 ( oldChildren 中所有未处理节点的最后面 )
         canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
         oldStartVnode = oldCh[++oldStartIdx]
         newEndVnode = newCh[--newEndIdx]
-      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left   新前和旧后
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+        //【移动节点】将 `旧后`DOM元素节点 移动到 `旧前`DOM元素节点的前面  ( oldChildren 中所有未处理的最前面 )
         canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
         oldEndVnode = oldCh[--oldEndIdx]
         newStartVnode = newCh[++newStartIdx]
-      } else {
+      } else {                                              // 最后再使用循环的方式查找节点
         // 当前新子节点: 本次循环所指向的新子节点 ( newStartVnode )
         // 当前旧子节点: 本次循环所指向的旧子节点 ( oldStartVnode )
         // oldChildren: 旧子节点列表
 
-        // 创建 oldChildren 的 key => index 映射对象
+        // 创建 oldChildren 的 key 和 index 索引对应关系
         if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
         // 找到当前新子节点在 oldChildren 中的位置
         idxInOld = isDef(newStartVnode.key)
@@ -564,6 +576,8 @@ export function createPatchFunction (backend) {
           if (sameVnode(vnodeToMove, newStartVnode)) {
             // 【更新节点】
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
+            // 将旧虚拟子节点被设置为 undefined, 用来标记这个节点已经被处理并且移动到其他位置
+            // 目的是为了 防止后续重复处理同一个节点
             oldCh[idxInOld] = undefined
             // 【移动节点】
             // 将 待移动的旧子节点 插入到 当前旧子节点 之前, 完成移动操作
@@ -580,17 +594,21 @@ export function createPatchFunction (backend) {
     
     // 循环遍历结束
     // 如果 oldStartIdx > oldEndIdx 
-    // 说明 oldChildren 的所有节点已经被遍历了一遍, 
+    // 说明 oldChildren 的所有节点已经被遍历了一遍, 如果 newChildren 中还有剩余的节点, 说明这些节点是需要新增的节点,
+    //      直接把这些节点插入到DOM中就行了.
+    //      ( 下标在 newStartIdx 和 newEndIdx 之间的所有节点都是需要新增的节点 )
     // 否则,
     // 如果 oldStartIdx <= oldEndIdx 且 newStartIdx > newEndIdx
     // 说明 newChildren 的所有节点已经被遍历了一遍, 而 oldChildren 中还有剩余节点未被处理
-    // 那么这些节点就是被废弃的, 需要删除的节点.
+    // 那么这些节点就是被废弃的, 需要删除的节点, 直接将这些节点从DOM中移除.
+    // (下标在 oldStartIdx 和 oldEndIdx 之间的所有节点都是需要删除的节点)
 
     if (oldStartIdx > oldEndIdx) {
-      // 如果 refElm 不存在, 说明
       refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      //【新增节点】
       addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
     } else if (newStartIdx > newEndIdx) {
+      //【删除节点】
       removeVnodes(oldCh, oldStartIdx, oldEndIdx)
     }
   }
