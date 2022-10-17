@@ -15,10 +15,14 @@ export const createCompiler = createCompilerCreator(function baseCompile (
   template: string,
   options: CompilerOptions
 ): CompiledResult {
+  // 1. 解析器: 将模板解析为AST
+  // 2. 优化器: 遍历AST标记静态节点
+  // 3. 代码生成器: 使用AST生成渲染函数
+
   // 调用 parse 函数将字符串模板解析成抽象语法树(AST)
   const ast = parse(template.trim(), options)
   if (options.optimize !== false) {
-    // 调用 optimize 函数优化 ast
+    // 调用 optimize 函数优化 ast, 标记静态节点
     optimize(ast, options)
   }
   // 调用 generate 函数将 ast 编译成渲染函数 (根据给定的AST生成目标平台的代码)
