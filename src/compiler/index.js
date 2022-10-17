@@ -32,7 +32,7 @@ export const createCompiler = createCompilerCreator(function baseCompile (
     render: code.render,
     staticRenderFns: code.staticRenderFns
   }
-  // 其最终返回了抽象语法树(ast)，渲染函数(render)，静态渲染函数(staticRenderFns)
+  // 其最终返回了抽象语法树(ast), 渲染函数(render), 静态渲染函数(staticRenderFns)
   // (
   //   注意以上提到的渲染函数, 都以字符串的形式存在, 
   //   因为真正变成函数的过程是在 compileToFunctions 中使用 new Function() 来完成的

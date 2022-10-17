@@ -81,7 +81,9 @@ Vue.prototype.$mount = function (
         comments: options.comments
         // delimiters, comments 这两个选项只有在创建完整版 Vue 的时候才会用到, 具体作用看官方文档说明
       }, this)
+      // 渲染函数
       options.render = render
+      // 静态渲染函数 ( 用于静态节点的渲染优化 )
       options.staticRenderFns = staticRenderFns
 
       /* istanbul ignore if */
