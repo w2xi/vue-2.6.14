@@ -32,5 +32,68 @@
       "file": "/home/w2xi/projects/github/vue-2.6.14/demo/reactivity/01-test.html",
       "runtimeExecutable": "/opt/google/chrome/google-chrome"
     },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open 01-nextTick.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/next-tick/01-nextTick.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open 06-computed.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/06-computed.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open parser/01-parse-html.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/parser/01-parse-html.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open parser/02-parse.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/parser/02-parse.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open 09-generate-render-func.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/09-generate-render-func.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open vnode/01-vnode.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/vnode/01-vnode.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open patch/01-patch.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/patch/01-patch.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open patch/02-patch-update.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/patch/02-patch-update.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Open patch/03-diff.html",
+      "file": "/home/w2xi/projects/github/vue-2.6.14/demo/patch/03-diff.html",
+      "runtimeExecutable": "/opt/google/chrome/google-chrome"
+    }
   ]
 }
