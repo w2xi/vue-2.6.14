@@ -437,7 +437,7 @@ export function parse (
         let child: ?ASTNode
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           // type: 2, 包含字面量(插值)表达式的文本节点
-          // example: <span>text: {{ msg }} {{ content }}<span>
+          // example: <span>text: {{ msg }} {{ content }}</span>
           child = {
             type: 2,
             expression: res.expression,
@@ -445,6 +445,7 @@ export function parse (
             text
           }
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
+          // type: 3, 普通文本节点或注释节点
           child = {
             type: 3,
             text
