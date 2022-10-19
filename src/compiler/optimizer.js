@@ -1,5 +1,13 @@
 /* @flow */
 
+/**
+ * 优化器
+ * 作用: 在AST中找出静态子树并打上标记
+ * 标记静态子树的好处:
+ *  1. 每次重新渲染时, 不需要为静态子树创建新节点
+ *  2. 在虚拟DOM中打补丁(patch)的过程中可以跳过
+ */
+
 import { makeMap, isBuiltInTag, cached, no } from 'shared/util'
 
 let isStaticKey
@@ -22,8 +30,21 @@ export function optimize (root: ?ASTElement, options: CompilerOptions) {
   if (!root) return
   isStaticKey = genStaticKeysCached(options.staticKeys || '')
   isPlatformReservedTag = options.isReservedTag || no
+
+  // (1) 在AST中找出所有[静态节点](static)并打上标记
+  // 静态节点: 永远不会发生变化的节点.
+  // example: 
+  //    <p>我是静态节点, 不需要发生变化</p>
   // first pass: mark all non-static nodes.
   markStatic(root)
+
+  // (2) 在AST中找出所有[静态根节点](staticRoot)并打上标记
+  // 静态根节点: 如果一个节点下面的所有子节点的都是静态节点, 并且它的父级是动态节点.
+  // xample:
+  //  <ul>
+  //    <li>我是静态节点, 不需要发生变化</li>
+  //    <li>我是静态节点, 不需要发生变化</li>
+  //  </ul> 
   // second pass: mark static roots.
   markStaticRoots(root, false)
 }
@@ -35,6 +56,7 @@ function genStaticKeys (keys: string): Function {
   )
 }
 
+// 标记静态节点
 function markStatic (node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
@@ -52,6 +74,7 @@ function markStatic (node: ASTNode) {
       const child = node.children[i]
       markStatic(child)
       if (!child.static) {
+        // 回溯
         // 如果子元素 static 为 false, 则其父元素 static 被重置为 false
         node.static = false
       }
@@ -68,11 +91,14 @@ function markStatic (node: ASTNode) {
   }
 }
 
+// 标记静态根节点
 function markStaticRoots (node: ASTNode, isInFor: boolean) {
   if (node.type === 1) {
     if (node.static || node.once) {
       node.staticInFor = isInFor
     }
+    // 在 标记静态节点 (markStatic) 时, 有一个逻辑: 静态节点的所有子节点也都是静态节点.
+
     // For a node to qualify as a static root, it should have children that
     // are not just static text. Otherwise the cost of hoisting out will
     // outweigh the benefits and it's better off to just always render it fresh.
@@ -80,7 +106,9 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
       node.children.length === 1 &&
       node.children[0].type === 3
     )) {
+      // 标记为静态根节点
       node.staticRoot = true
+      // 直接返回, 而不需要向下级继续处理
       return
     } else {
       node.staticRoot = false
@@ -108,7 +136,7 @@ function isStatic (node: ASTNode): boolean {
   return !!(node.pre || (
     !node.hasBindings && // no dynamic bindings
     !node.if && !node.for && // not v-if or v-for or v-else
-    !isBuiltInTag(node.tag) && // not a built-in
+    !isBuiltInTag(node.tag) && // not a built-in tag, like `slot` or `component`
     isPlatformReservedTag(node.tag) && // not a component
     !isDirectChildOfTemplateFor(node) &&
     Object.keys(node).every(isStaticKey)
