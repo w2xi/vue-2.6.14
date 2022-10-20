@@ -42,7 +42,9 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
-      // 给 Vue 实例添加 $options 属性， 用于当前 Vue 初始化
+      // 初始化 vm.$options
+      // 将用户传递的 options 选项与当前构造函数的options属性及其父级实例的构造函数的options属性,
+      // 合并成一个新的 options 并赋值给 vm.$options
       vm.$options = mergeOptions(
         resolveConstructorOptions(vm.constructor),
         options || {},
@@ -102,6 +104,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   }
 }
 
+// 获取当前实例中构造函数的 options 选项及其所有父级的构造函数的 options
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
   // super 属性 是`子类`才有的属性

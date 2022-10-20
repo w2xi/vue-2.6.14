@@ -271,6 +271,7 @@ export default class Watcher {
   }
 
   /**
+   * 将自身 watcher 实例从所有 依赖的订阅者列表中 移除
    * Remove self from all dependencies' subscriber list.
    */
   teardown () {

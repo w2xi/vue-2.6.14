@@ -118,6 +118,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // remove self from parent
     const parent = vm.$parent
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
+      // 将自身实例从组件中移除
       remove(parent.$children, vm)
     }
     // teardown watchers
