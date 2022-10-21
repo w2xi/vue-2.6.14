@@ -6,7 +6,7 @@ import { inBrowser, inWeex } from './env'
 import { isPromise } from 'shared/util'
 import { pushTarget, popTarget } from '../observer/dep'
 
-// 依次执行 父组件中的 errorCaptured 钩子函数 与 全局的 config.errorHandler
+// 依次触发父组件链路上的每一个父组件中定义的errorCaptured钩子函数 与 全局的 config.errorHandler
 export function handleError (err: Error, vm: any, info: string) {
   // Deactivate deps tracking while processing error handler to avoid possible infinite rendering.
   // See: https://github.com/vuejs/vuex/issues/1505
