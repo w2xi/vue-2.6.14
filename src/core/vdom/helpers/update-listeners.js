@@ -80,6 +80,7 @@ export function updateListeners (
       if (isTrue(event.once)) {
         cur = on[name] = createOnceHandler(event.name, cur, event.capture)
       }
+      // listeners 中存在该事件, oldListeners 中不存在该事件, 说明该事件需要新增的事件
       add(event.name, cur, event.capture, event.passive, event.params)
     } else if (cur !== old) {
       old.fns = cur
@@ -88,6 +89,7 @@ export function updateListeners (
   }
   for (name in oldOn) {
     if (isUndef(on[name])) {
+      // listeners 中不存在该事件, oldListeners 中存在该事件, 说明该事件需要移除的事件
       event = normalizeEvent(name)
       remove(event.name, oldOn[name], event.capture)
     }
