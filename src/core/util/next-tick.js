@@ -99,7 +99,7 @@ export function nextTick (cb?: Function, ctx?: Object) {
     }
   })
 
-  // pending: 一个标识，它的真假代表回调队列是否处于等待刷新的状态
+  // pending: 标记是否已经向任务队列中添加一个任务，它的真假代表回调队列是否处于等待刷新的状态
   // 初始值是 false，表示回调队列为空不需要等待刷新
   // 如果为 true，表示回调队列不为空，正在等待刷新
 
