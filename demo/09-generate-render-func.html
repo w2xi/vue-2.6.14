@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>optimizer</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      template: `
+        <div class="container">
+          <h1>Title</h1>
+          <p style="font-weight: bold; background: #666">This is a paragraph</p>
+          <button id="btn" @click.once="handleClick">click</button>
+        </div>
+      `,
+      methods: {
+        handleClick() {
+          console.log('clicked');
+        }
+      }
+    });
+  </script>
+  <script>
+    // template
+    `
+      <div class="container">
+        <h1>Title</h1>
+        <p style="font-weight: bold; background: #666">This is a paragraph</p>
+        <button id="btn" @click.once="handleClick">click</button>
+      </div>
+    `
+    // template => ast => render function
+
+    // render function ( 渲染函数 )
+    function anonymous() {
+      with (this) {
+        // vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false) (src/core/instance/render.js)
+        return _c(
+          'div', 
+          { staticClass: "container" },
+          [
+            _c('h1', [_v("Title")]),
+            _v(" "), 
+            _c(
+              'p', 
+              { staticStyle: { "font-weight": "bold", "background": "#666" } },
+              [_v("This is a paragraph")]
+            ), 
+            _v(" "), 
+            _c(
+              'button', 
+              { 
+                attrs: { "id": "btn" }, 
+                on: { 
+                  "~click": function ($event) { 
+                    return handleClick.apply(null, arguments) 
+                  }
+                }
+              },
+              [_v("click")]
+            )
+          ]
+        )
+  
+        // src/core/instance/render-helpers/index.js
+        // target._o = markOnce
+        // target._n = toNumber
+        // target._s = toString
+        // target._l = renderList
+        // target._t = renderSlot
+        // target._q = looseEqual
+        // target._i = looseIndexOf
+        // target._m = renderStatic
+        // target._f = resolveFilter
+        // target._k = checkKeyCodes
+        // target._b = bindObjectProps
+        // target._v = createTextVNode
+        // target._e = createEmptyVNode
+        // target._u = resolveScopedSlots
+        // target._g = bindObjectListeners
+        // target._d = bindDynamicKeys
+        // target._p = prependModifier
+      }
+    }
+  </script>
+</body>
+</html>

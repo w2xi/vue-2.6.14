@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$nextTick</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      created() {
+        // $nextTick 中的回调会被注册为 microtask (Promise 可用), 如果 Promise 不可用,则降级为 macrotask
+        // 无论是 microtask 还是 macrotask, $nextTick 中的回调都是在 [调用栈清空后才会被执行]
+
+        // 分析：
+        // 只有第一次调用 $nextTick 方法时才会执行 timerFunc 函数将 flushCallbacks 注册为 microtask
+        // 但此时 flushCallbacks 并不会执行, 因为它要等待接下来的两次 $nextTick 方法的调用语句执行完后才会执行
+        // 或者更准确的说是等待 [调用栈]被清空之后才会执行.
+        // 当 flushCallbacks 函数执行的时候, 
+        // callbacks 回调队列中将包含本次 [事件循环] 所收集的所有通过 $nextTick 方法注册的回调
+        // 而接下来的任务就是在 flushCallbacks 函数内将这些回调全部执行并清空
+        
+        this.$nextTick(() => console.log(1))
+        this.$nextTick(() => console.log(2))
+        this.$nextTick(() => console.log(3))
+      },
+    })
+    window.vm = vm;
+  </script>
+</body>
+</html>

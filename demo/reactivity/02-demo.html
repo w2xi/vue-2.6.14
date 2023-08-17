@@ -1,0 +1,112 @@
+<!--
+ * @Author: w2xi
+ * @Date: 2022-07-28 16:00:51
+ * @LastEditors: w2xi
+ * @LastEditTime: 2022-08-12 09:49:43
+ * @Description: Vue 响应式系统初探
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 响应式系统初探</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const data = {
+      a: 'a',
+      b: 'b',
+      c: 'c',
+      profile: {
+        address: 'Chang Sha',
+      },
+    };
+    window.Target = null;
+
+    walk(data);
+
+    // 监听 a 的变化, a 的值发生改变时 执行回调
+    $watch('a', (newVal, oldVal) => {
+      // a
+      console.log('new value:', newVal);
+      console.log('old value:', oldVal);
+    });
+    // 监听 b 的变化, b 的值发生改变时 执行回调
+    $watch('b', (newVal, oldVal) => {
+      // b
+      console.log('new value:', newVal);
+      console.log('old value:', oldVal);
+    });
+
+    // 接收一个 函数 作为参数
+    // $watch(() => data.profile.address, (newVal, oldVal) => {
+    //   console.log('new value:', newVal);
+    //   console.log('old value:', oldVal);
+    // });
+
+    $watch('profile.address', (newVal, oldVal) => {
+      // x
+      console.log('new value:', newVal);
+      console.log('old value:', oldVal);
+    });
+    
+    function walk(data) {
+      for (let key in data) {
+        // 依赖收集的 `容器`
+        const dep = [];
+        console.log(dep);
+        // 缓存字段原有的值
+        let val = data[key];
+        // 如果 val 是对象，递归调用 walk 函数将其转为访问器属性
+        const nativeString = Object.prototype.toString.call(val);
+        if (nativeString === '[object Object]') {
+          walk(val);
+        }
+        Object.defineProperty(data, key, {
+          get: function reactiveGetter() {
+            if (Target) { // Target 就是依赖函数 
+              // 收集依赖
+              dep.push(Target);
+            }
+            return val;
+          },
+          set: function reactiveSetter(newVal) {
+            if (val !== newVal) {
+              const oldVal = val;
+              // 更新旧的值
+              val = newVal
+              // 更新依赖
+              dep.forEach(fn => fn(newVal, oldVal));
+            }
+          },
+        });
+      }
+    }
+
+    function $watch(expOrFn, fn) {
+      Target = fn;
+      const getter = typeof expOrFn === 'function' ? expOrFn : parsePath(expOrFn);
+      // 触发 getter, 收集依赖
+      const val = getter(data);
+      Target = null;
+    }
+
+    // 解析 data.a.b => data['a']['b']
+    function parsePath(path) {
+      const pathArr = path.split('.');
+
+      return (obj) => {
+        for (let i = 0; i < pathArr.length; i++) {
+          if (!obj) return;
+          obj = obj[pathArr[i]];
+        }
+        return obj;
+      }
+    }
+  </script>
+</body>
+</html>

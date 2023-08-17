@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>parse HTML to AST</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      // template: '<div></div>',
+      // template: '<style></style>', // style is forbidden tag
+      // template: `<div v-if="a"></div><p v-else-if="b"></p><span v-else></span>`,
+      // template: `<div><p></p><div v-if="a"></div><p v-else-if="b"></p><span v-else></span></div>`,
+      // template: `
+      //   <div>
+      //     <div v-if="a">a</div>
+      //     aaaaa
+      //     <p v-else-if="b"></p>
+      //     bbbbb
+      //     <span v-else="c"></span>
+      //   </div>
+      // `,
+      // template: '<div v-pre class="pre-class"></div>',
+      // template: '<div><span v-for="item of list"></span></div>',
+      // template: '<div><span v-for="(item, index) of list"></span></div>',
+      // template: '<div><span v-for="(value, key, index) of obj"></span></div>',
+      template: `
+        <div class="container">
+          <h1>Parse HTML</h1>
+          <p class="msg" style="color: #ccc; font-weight: 16px;">My name is: {{ name }}. Age: 21</p>
+          <button @click.once="handleClick">Click</button>
+        </div>
+      `,
+      data: {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+        list: [1,2,3],
+        obj: { a: 'a' },
+        msg: 'Hello Vue.js!',
+        name: 'w2xi'
+      },
+      methods: {
+        handleClick() {
+          console.log('clicked');
+        }
+      }
+    });
+    const html = '<div v-for="obj of list" class="box"></div>'
+    // parseHTML(html, {
+    //   start(tag, attrs) {
+    //     console.log(tag)    // 'div'
+    //     console.log(attrs)  // [{name: 'v-for', value: 'obj of list'}, {name: 'class', value: 'box'}]
+    //   },
+    // })
+  </script>
+</body>
+</html>

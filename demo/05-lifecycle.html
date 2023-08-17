@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeCycle hooks invoked sequence</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    {{ msg }}
+    <div>
+      <child-component />
+    </div>
+  </div>
+  <script>
+    const Child = {
+      template: `
+        <div>
+          <h1>Child component!</h1>
+          <p>{{ msg }}</p>
+        </div>
+      `,
+      data() {
+        return {
+          msg: 'Hello Child!'
+        }
+      },
+      beforeCreate() {
+        console.log('Child beforeCreate');
+      },
+      created() {
+        console.log('Child created');
+      },
+      beforeMount() {
+        console.log('Child beforeMount');
+      },
+      beforeUpdate() {
+        console.log('Child beforeUpdate');
+      },
+      updated() {
+        console.log('Child updated');
+      },
+      mounted() {
+        console.log('Child mounted');
+      },
+    }
+    const vm = new Vue({
+      el: '#app',
+      components: {
+        Child,
+      },
+      beforeCreate() {
+        console.log('Parent beforeCreate');
+      },
+      created() {
+        console.log('Parent created');
+      },
+      beforeMount() {
+        console.log('Parent beforeMount');
+      },
+      beforeUpdate() {
+        console.log('Parent beforeUpdate');
+      },
+      updated() {
+        console.log('Parent updated');
+      },
+      mounted() {
+        console.log('Parent mounted');
+      },
+    });
+
+    // lifecycle hooks invoked sequences:
+    // Parent beforeCreate -> Parent created -> Parent beforeMount
+    //   -> Child beforeCreate -> Child created -> Child beforeMount -> Child mounted 
+    // -> Parent mounted
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!--
+ * @Author: w2xi
+ * @Date: 2022-07-28 16:00:51
+ * @LastEditors: w2xi 43wangxi@gmail.com
+ * @LastEditTime: 2022-10-23 14:01:15
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Vue2</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <child-component title="Child Comp"></child-component>
+  </div>
+  <script>
+    const ChildComponent = {
+      props: ['title'],
+      template: `<div :id="child" data-id="12" class="child-class" style="backgroundColor: #ccc">
+        <h1 ref="h1" v-if="a" class="title" :style="{ color: '#000', fontSize: fontSize }">{{ title }}</h1>
+        <button class="btn" @click="handleClick" @click.once="handleClick2">click!</button>
+      </div>`,
+      data() {
+        return {
+          fontSize: '20px',
+          child: 'childId',
+          a: true,
+        }
+      },
+      methods: {
+        handleClick() {
+          console.log()
+        },
+        handleClick2() {}
+      },
+      created() {
+        console.log(this);
+      },
+    }
+    const vm = new Vue({
+      el: '#app',
+      components: {
+        ChildComponent
+      },
+      data: {
+        msg: 'watch'
+      },
+    });
+  </script>
+</body>
+</html>

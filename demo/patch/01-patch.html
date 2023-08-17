@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello VNode</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <Child></Child>
+  </div>
+  <script>
+    const Child = {
+      template: `
+        <div>
+          <h1>Child component!</h1>
+          <p>{{ msg }}</p>
+        </div>
+      `,
+      data() {
+        return {
+          msg: 'Hello Child!'
+        }
+      },
+    }
+    const vm = new Vue({
+      el: '#app',
+      components: {
+        Child,
+      },
+    });
+  </script>
+  <script>
+    const template = `
+      <div id="app">
+        <Child></Child>
+      </div>
+    `
+    // render function
+    const render = function anonymous() {
+      with(this){
+        return _c(
+          'div',                   // tag
+          { attrs: {"id":"app"} }, // data
+          [_c('child')],           // children
+          1                        // normalizationType
+        )
+      }
+    };
+
+    // Child component
+    const childRenderFn = function anonymous() {
+      with(this){
+        return _c(
+          'div',
+          [
+            _c(
+              'h1',
+              [_v("Child component!")]
+            ),
+            _v(" "),
+            _c(
+              'p',
+              [_v(_s(msg))]
+            )
+          ]
+        )
+      }
+    };
+  </script>
+</body>
+</html>

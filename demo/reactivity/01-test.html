@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reactivity</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    {{ name }} {{ age }}
+  </div>
+  <script>
+    const data = {
+      profile: {
+        address: 'China'
+      },
+      arr: [
+        { a: 1 },
+      ],
+      name: '小明',
+      age: 21,
+    };
+    const vm = new Vue({
+      el: '#app',
+      data,
+      mounted() {
+        this.name = 'w2xi'
+        this.age = 24
+      },
+    });
+
+    // 响应式观测后的 data => 
+    // const _data = {
+    //   profile: {
+    //     address: "China",
+    //     __ob__: {           // Observer 实例
+    //       value: profile,   // 指向 profile
+    //       dep: new Dep(),
+    //       vmCount: 0,
+    //     },
+    //     // address getter/setter 并通过闭包引用着 dep 和 childOb
+    //   },
+    //   __ob__: {             // Observer 实例
+    //     value: data,        // 指向 data，是一个循环引用
+    //     dep: new Dep(),     // Dep 实例
+    //     vmCount: 1,             
+    //   },
+    //   // profile getter/setter 并通过闭包引用着 dep 和 childOb
+    // }
+  </script>
+</body>
+</html>

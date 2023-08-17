@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$nextTick</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">{{ name }}</div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        name: 'wang',
+      },
+      created() {
+        /*
+         分析：
+         1. this.name = 'w2xi' 将触发渲染函数的观察者的 update 方法
+          update 方法会调用 queueWatcher 函数 将 renderWatch 送入 queue 中，
+          同时还以 flushSchedulerQueue 函数为参数调用了 nextTick 方法
+          nextTick 方法的调用 会把 flushSchedulerQueue 送入 callbacks 中，
+          然后调用 timerFunc 函数 将 flushCallbacks 注册为 microtask 
+          此时：
+          queue: [ Watcher ] ( 渲染函数的观察者 )
+          callbacks: [ flushSchedulerQueue ]
+          microtask: [ flushCallbacks ]
+         2. 执行 第一个外层的 $nextTick 方法
+          将其回调函数送入 callbacks 中
+          然后，由于此时 pending 为真，即 回调队列不为空，正在等待刷新, 所以不会执行 timerFunc 函数
+          此时：
+          callbacks: [
+            flushSchedulerQueue,
+            () => {
+              this.name = 'wang';
+              this.$nextTick(() => console.log('再次调用 $nextTick 函数'));
+            }
+          ]
+         3. 当调用栈被清空后，开始执行 microtask 中的 flushCallbacks 函数
+          flushCallbacks 函数会遍历 callbacks 回调队列, 
+            3.1 首先执行 flushSchedulerQueue 函数, 这个函数会遍历 queue 中的所有观察者并重新求值，完成重新渲染
+              在完成渲染之后，本次更新队列已经清空，queue 会被重置为空数组，一切状态还原
+            (此时 DOM 已经渲染好，可以访问 DOM 元素了)
+            3.2 然后执行外层 $nextTick 的回调函数 ( callbacks 中的第二个元素 )
+              this.name = 'wang' 和 this.name = 'w2xi' 的执行流程一样 
+              同样的会调用 nextTick 函数将 flushSchedulerQueue 添加到 callbacks 数组中
+              由于此时 pending 为 false，因此 nextTick 函数会把 flushCallbacks 注册为一个新的 microtask
+          此时，microtask:
+            [
+              flushCallbacks, // 第一个 flushCallbacks
+              flushCallbacks, // 第二个 flushCallbacks
+            ]
+            
+            接下来 第二个 flushCallbacks 函数的一切流程与第一个 flushCallbacks 是完全相同的。
+        */
+        this.name = 'w2xi';
+        this.$nextTick(() => {
+          this.name = 'wang';
+          this.$nextTick(() => console.log('再次调用 $nextTick 函数'));
+        });
+      },
+    });
+    window.vm = vm;
+  </script>
+</body>
+</html>

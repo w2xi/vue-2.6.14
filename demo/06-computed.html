@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Vue2</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div>{{ compA }}</div>
+  </div>
+  <script>
+    /*
+      模板会被编译成渲染函数, 渲染函数的执行将触发计算属性 compA 的 get 拦截器函数,
+      即下面的 computedGetter 函数被执行, 执行返回的结果就是计算属性的值。
+      渲染函数执行 -> 虚拟 DOM -> 真实 DOM
+      在非服务端渲染的情况下, compA 的 拦截器函数为:
+
+      sharedPropertyDefinition.get = function computedGetter () {
+        // 计算属性的观察者实例对象
+        const watcher = this._computedWatchers && this._computedWatchers[key]
+        if (watcher) {
+          if (watcher.dirty) { // for lazy watcher
+            // 对计算属性求值，即执行计算属性的 getter，这里是: function() { return this.a + 1 }
+            // 执行 getter 函数会访问 属性 a，
+            // 这将会触发 属性 a 的 get 拦截器函数, 即将【计算属性的观察者】与属性 a 的【Dep实例对象】建立关联
+            // 求值之后 观察者的 dirty 属性被设置为 false
+            // 因此 再次访问 compA 属性时无需再次求值
+            watcher.evaluate()
+            // 求值结束 //
+          }
+          // 这里的 Dep.target 的值是 渲染函数的观察者 (renderWatcher)
+          if (Dep.target) {
+            // 执行后会把【计算属性观察者】的 deps属性(保存了计算属性所有的响应式属性的Dep) 与【渲染函数的观察者】建立关联
+            watcher.depend()
+          }
+          // 返回计算属性的值
+          return watcher.value
+        }
+      }
+      
+      我们知道, 属性 a 是计算属性 compA 的响应式依赖, 即改变 a 的状态会导致计算属性 compA 重新计算求值.
+      让我们来分析下当改变[响应式属性a]的值时将会发生什么:
+      改变属性a的值,将会触发属性a所收集的所有依赖,这其中包括计算属性的观察者.
+      我们知道触发某个响应式属性的依赖实际上就是执行该属性所收集到的所有观察者的 update 方法,
+      所以这里会依次执行: 
+        1. 计算属性的观察者(computedWatcher)的 update 方法. 
+        2. 渲染函数的观察者(renderWatcher)的 update 方法.
+      
+      1. 执行 computedWatcher.update(): this.dirty = true.
+      2. 执行   renderWatcher.update(): 重新求值,即重新执行渲染函数, 
+          而渲染函数的执行又将触发计算属性的get拦截器函数...(这一过程已经前面分析过了), 最终完成视图的更新
+    */
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        a: 1
+      },
+      computed: {
+        compA() {
+          return this.a + 1
+        }
+      }
+    })
+    window.vm = vm;
+  </script>
+</body>
+</html>

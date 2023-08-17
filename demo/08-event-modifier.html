@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Modifier</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- <button @click.once="handleClick">click</button> -->
+    <!-- 等价于 -->
+    <!-- <button @~click="handleClick">click</button> -->
+
+    <!-- @click + .right <=> @contextmenu -->
+    <!-- <button @click.right="handleClick">click</button> -->
+
+    <!-- @click + .middle <=> @mouseup -->
+    <!-- <button @click.middle="handleClick">click</button> -->
+
+    <button @click.once="handleClick1" @click="handleClick2" @click.prevent="handleClick3">click!</button>
+  </div>
+  <script>
+    // ! <=> capture
+    // ~ <=> once
+    // & <=> passive
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        id: 0,
+      },
+      methods: {
+        handleClick(event) {
+          console.log(event.type, event)
+        },
+        handleClick1() {
+          console.log('clicked 1')
+        },
+        handleClick2() {
+          console.log('clicked 2')
+        },
+        handleClick3() {
+          console.log('clicked 3')
+        },
+      },
+    })
+  </script>
+</body>
+</html>

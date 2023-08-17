@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Vue2</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    // watch 有多种写法:
+    // 1. 键值是一个 function 
+    // 2. 键值是一个纯对象( 带有 handler 等属性 )
+    // 3. 键值是一个字符串
+  
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        a: 'a',
+        b: 'b',
+        c: 'c',
+        d: {
+          e: 'e'
+        },
+      },
+      watch: {
+        // a(newVal){},
+        // b: {
+        //   handler(){},
+        //   immediate: true,  // 立即执行回调
+        //   deep: true,       // 深度观测
+        // },
+        // c: 'foo', // 这里的 foo 是 methods 中的 key
+        d: {
+          handler(newVal){
+            console.log(newVal)
+          },
+          immediate: true,
+        }
+      },
+      methods: {
+        foo() {},
+      }
+    })
+    window.vm = vm;
+  </script>
+</body>
+</html>

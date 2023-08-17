@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Vue2</title>
+  <script src="../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- comments -->
+    <p>12</p>
+  </div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      // template: '<span>text: {{ msg }} {{ content }}</span>',
+      data: {
+        msg: 'Hello Vue.js',
+        content: '!'
+      },
+      comments: true, // 保留注释节点
+    })
+    window.vm = vm;
+  </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$nextTick</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div ref="msgRef">{{ msg }}</div>
+    <button @click="mutate">change</button>
+  </div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      data: {
+        msg: 'wang'
+      },
+      created() {
+        // 在 created 钩子中, 渲染函数还不存在 依赖并未收集
+        // 此时对 `状态的更改` 仅仅是对值的更改, 并不会执行其它的操作
+
+        // this.msg = 'w2xi'
+        // console.log(this.$options.render);
+      },
+
+      mounted() {
+        // 组件挂载
+        // 渲染函数已经存在, 模板中的依赖收集完毕
+      },
+
+      methods: {
+        mutate() {
+          const msgRef = this.$refs.msgRef
+          this.msg = 'xi'
+          // DOM 还没有更新, 所以拿到的是 `旧值`
+          console.log(msgRef.innerText) // wang
+
+          this.$nextTick(function() {
+            // DOM 已经更新完毕
+            console.log(msgRef.innerText) // xi
+          })
+
+          /**
+           * $nextTick API 总结:
+           * 
+           * nextTick 接收一个回调函数作为参数, 它的作用是将回调延迟到下次DOM更新周期之后执行.
+           * 如果没有提供回调且在支持 Promise 的环境中, 则返回一个 Promise.
+           * 
+           * 当状态发生变化时, watcher 会得到通知, 然后触发虚拟DOM的渲染流程.
+           * 而 watcher 触发渲染这个操作并不是同步的, 而是异步的. 
+           * Vue.js 中有一个队列, 每当渲染时, 会将 watcher 推送到这个队列中 ( 不会有重复的 watcher ), 
+           * 在下一次事件循环中再让 watcher 触发渲染的流程
+           * 
+           * 我们知道 Vue2 开始使用虚拟DOM, 变化侦测的通知粒度是 `组件级别的`, 组件内用到的所有状态的变化
+           * 都会通知到同一个 watcher.
+           * 
+           * 如果在一个组件中有多个状态发生变更, 只会执行一次渲染, 为什么 ?
+           * 
+           * 因为 Vue 内部 会在将 watcher 添加到队列之前检查其中是否已经存在 相同的 wacther,
+           * 只有不存在时, 才会将 watcher 添加到队列中. 然后在下一次事件循环中, 
+           * Vue.js 会让队列中的 watcher 触发渲染流程 并 清空队列.
+           */
+        },
+      },
+    });
+  </script>
+</body>
+</html>

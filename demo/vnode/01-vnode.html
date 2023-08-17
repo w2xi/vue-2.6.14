@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello VNode</title>
+  <script src="../../dist/vue.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const vm = new Vue({
+      el: '#app',
+      template: '<span>text</span>',
+      // template: '<p><span>Hello </span><span>Berwin</span></p>',
+      // template: '<Child></Child>',
+    });
+  </script>
+  <script>
+    // template
+    const template = '<span>text</span>'
+    // ast
+    let ast = {
+      type: 1,
+      tag: 'span',
+      attrsList: [],
+      attrsMap: {},
+      rawAttrsMap: {},
+      children: [
+        {
+          type: 3,
+          text: 'text',
+          start: 6,
+          end: 10,
+          static: true, // 调用 optimize 函数优化 ast 定义的属性
+        },
+      ],
+      start: 0,
+      end: 17,
+      plain: true,
+      parent: null,
+      static: true, // 调用 optimize 函数优化 ast 定义的属性
+    }
+    // 优化 ast
+    optimize(ast, options)
+    // generate code ( 代码生成 )
+    const code = `'with(this){return _c('span',[_v("text")])}'`
+
+    // render function
+    const render = function anonymous() {
+      with(this){
+        return _c('span',[_v("text")])
+      }
+    };
+    
+    // vnode
+    const vnode = {
+      tag: 'span',
+      data: undefined,
+      children: [
+        { text: 'text', /* ...其它默认属性 */}, // VNode
+      ],
+      text: undefined,
+      elm: undefined,
+      ns: undefined,
+      context: undefined,
+      fnContext: undefined,
+      fnOptions: undefined,
+      fnScopeId: undefined,
+      key: undefined,
+      componentOptions: undefined,
+      componentInstance: undefined,
+      parent: undefined,
+      raw: false,
+      isStatic: false,
+      isRootInsert: true,
+      isComment: false,
+      isCloned: false,
+      isOnce: false,
+      asyncFactory: undefined,
+      asyncMeta: undefined,
+      isAsyncPlaceholder: false,
+    };
+  </script>  
+</body>
+</html>
